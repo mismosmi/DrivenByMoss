@@ -11,7 +11,6 @@ import de.mossgrabers.controller.arturia.beatstep.controller.BeatstepColorManage
 import de.mossgrabers.controller.arturia.beatstep.controller.BeatstepControlSurface;
 import de.mossgrabers.framework.controller.grid.IPadGrid;
 import de.mossgrabers.framework.daw.IModel;
-import de.mossgrabers.framework.daw.clip.INoteClip;
 import de.mossgrabers.framework.daw.clip.IStepInfo;
 import de.mossgrabers.framework.daw.clip.NotePosition;
 import de.mossgrabers.framework.daw.clip.StepState;
@@ -67,22 +66,21 @@ public class SequencerView extends AbstractSequencerView<BeatstepControlSurface,
                 break;
 
             case 9:
-                final INoteClip clip = this.getClip();
                 int midiChannel = this.configuration.getMidiEditChannel();
 
                 for (int i = 0; i < 128; i++) {
                     final NotePosition notePosition = new NotePosition(midiChannel, this.activeStep, i);
 
-                    IStepInfo step = clip.getStep(notePosition);
+                    IStepInfo step = this.getClip().getStep(notePosition);
 
                     if (step.getState() != StepState.OFF) {
-                        clip.changeStepDuration(notePosition, value);
+                        this.getClip().changeStepDuration(notePosition, value);
                     }
 
-                    step = clip.getStep(notePosition);
+                    step = this.getClip().getStep(notePosition);
 
                     if (step.getDuration() == 0) {
-                        clip.clearStep(notePosition);
+                        this.getClip().clearStep(notePosition);
                     }
                 }
                 break;

@@ -4,6 +4,7 @@
 
 package de.mossgrabers.controller.arturia.beatstep.view;
 
+import java.util.ArrayList;
 import java.util.Optional;
 
 import de.mossgrabers.controller.arturia.beatstep.BeatstepConfiguration;
@@ -68,21 +69,31 @@ public class SequencerView extends AbstractSequencerView<BeatstepControlSurface,
             case 9:
                 int midiChannel = this.configuration.getMidiEditChannel();
 
+                ArrayList<NotePosition> notes = new ArrayList<NotePosition>(5);
+
                 for (int i = 0; i < 128; i++) {
                     final NotePosition notePosition = new NotePosition(midiChannel, this.activeStep, i);
 
                     IStepInfo step = this.getClip().getStep(notePosition);
 
                     if (step.getState() != StepState.OFF) {
-                        this.getClip().changeStepDuration(notePosition, value);
-                    }
-
-                    step = this.getClip().getStep(notePosition);
-
-                    if (step.getDuration() == 0) {
-                        this.getClip().clearStep(notePosition);
+                        notes.add(notePosition);
                     }
                 }
+
+                this.getClip().startEdit(notes);
+
+                for (NotePosition note : notes) {
+                    this.getClip().changeStepDuration(note, value);
+
+                    IStepInfo step = this.getClip().getStep(note);
+
+                    if (step.getDuration() == 0) {
+                        this.getClip().clearStep(note);
+                    }
+                }
+
+                this.getClip().stopEdit();
                 break;
 
             case 10:
@@ -162,10 +173,7 @@ public class SequencerView extends AbstractSequencerView<BeatstepControlSurface,
         }
 
         if (!this.gridNotePressed) {
-            final int channel = this.configuration.getMidiEditChannel();
-            for (int i = 0; i < 128; i++) {
-                this.getClip().clearStep(new NotePosition(channel, this.activeStep, note));
-            }
+            this.clearActiveStep();
         }
 
         this.gridNotePressed = true;
@@ -233,5 +241,22 @@ public class SequencerView extends AbstractSequencerView<BeatstepControlSurface,
             if (this.keyManager.map(i) == note)
                 this.keyManager.setKeyPressed(i, velocity);
         }
+    }
+
+    private void clearActiveStep() {
+        final int channel = this.configuration.getMidiEditChannel();
+        ArrayList<NotePosition> notes = new ArrayList<NotePosition>(5);
+
+        for (int i = 0; i < 128; i++) {
+            notes.add(new NotePosition(channel, this.activeStep, i));
+        }
+
+        this.getClip().startEdit(notes);
+            
+        for (NotePosition currentNote : notes) {
+            this.getClip().clearStep(currentNote);
+        }
+
+        this.getClip().stopEdit();
     }
 }

@@ -61,6 +61,10 @@ public class BeatstepPadGrid extends PadGridImpl
             color
         }) + BeatstepControlSurface.SYSEX_END;
         this.output.sendSysex (data);
+        try {
+            Thread.sleep(1);
+        } catch (InterruptedException e) {
+        }
     }
 
 

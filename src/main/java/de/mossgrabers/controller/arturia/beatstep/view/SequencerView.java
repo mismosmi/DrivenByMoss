@@ -6,82 +6,140 @@ package de.mossgrabers.controller.arturia.beatstep.view;
 
 import java.util.Optional;
 
+import de.mossgrabers.controller.arturia.beatstep.BeatstepConfiguration;
 import de.mossgrabers.controller.arturia.beatstep.controller.BeatstepColorManager;
 import de.mossgrabers.controller.arturia.beatstep.controller.BeatstepControlSurface;
 import de.mossgrabers.framework.controller.grid.IPadGrid;
 import de.mossgrabers.framework.daw.IModel;
 import de.mossgrabers.framework.daw.clip.INoteClip;
+import de.mossgrabers.framework.daw.clip.IStepInfo;
 import de.mossgrabers.framework.daw.clip.NotePosition;
 import de.mossgrabers.framework.daw.clip.StepState;
 import de.mossgrabers.framework.daw.constants.Resolution;
 import de.mossgrabers.framework.daw.data.ITrack;
 import de.mossgrabers.framework.daw.data.bank.ITrackBank;
 import de.mossgrabers.framework.scale.Scales;
-
+import de.mossgrabers.framework.view.sequencer.AbstractSequencerView;
 
 /**
  * The Sequencer view.
  *
  * @author Jürgen Moßgraber
  */
-public class SequencerView extends BaseSequencerView
-{
+public class SequencerView extends AbstractSequencerView<BeatstepControlSurface, BeatstepConfiguration>
+        implements BeatstepView {
+
+    protected TrackEditing extensions;
     private static final int NUM_DISPLAY_COLS = 16;
-    private static final int START_KEY        = 36;
 
-    protected int            offsetY;
-
+    private int activeStep = 0;
+    private boolean gridNotePressed = false;
 
     /**
      * Constructor.
      *
      * @param surface The controller
-     * @param model The model
+     * @param model   The model
      */
-    public SequencerView (final BeatstepControlSurface surface, final IModel model)
-    {
-        super ("Sequencer", surface, model, 128, SequencerView.NUM_DISPLAY_COLS);
+    public SequencerView(final BeatstepControlSurface surface, final IModel model) {
+        super("Sequencer", surface, model, 128, SequencerView.NUM_DISPLAY_COLS, false);
 
-        this.offsetY = SequencerView.START_KEY;
+        this.extensions = new TrackEditing(surface, model);
 
-        final ITrackBank tb = model.getTrackBank ();
-        tb.addSelectionObserver ( (index, isSelected) -> this.keyManager.clearPressedKeys ());
-        tb.addNoteObserver (this::updateNote);
+        final ITrackBank tb = model.getTrackBank();
+        tb.addSelectionObserver((index, isSelected) -> this.keyManager.clearPressedKeys());
+        tb.addNoteObserver(this::updateNote);
     }
-
 
     /** {@inheritDoc} */
     @Override
     public void onKnob (final int index, final int value)
     {
         final boolean isIncrease = this.model.getValueChanger ().isIncrease (value);
-        switch (index)
-        {
+        switch (index) {
+            case 8:
+                int numSteps = this.getClip().getNumSteps();
+
+                this.activeStep = Math.min(numSteps - 1,
+                        Math.max(0, this.activeStep + this.model.getValueChanger().decode(value)));
+
+                this.surface.getDisplay().notify("Step " + (this.activeStep + 1));
+                break;
+
+            case 9:
+                final INoteClip clip = this.getClip();
+                int midiChannel = this.configuration.getMidiEditChannel();
+
+                for (int i = 0; i < 128; i++) {
+                    final NotePosition notePosition = new NotePosition(midiChannel, this.activeStep, i);
+
+                    IStepInfo step = clip.getStep(notePosition);
+
+                    if (step.getState() != StepState.OFF) {
+                        clip.changeStepDuration(notePosition, value);
+                    }
+
+                    step = clip.getStep(notePosition);
+
+                    if (step.getDuration() == 0) {
+                        clip.clearStep(notePosition);
+                    }
+                }
+                break;
+
+            case 10:
+                if (!this.isActive())
+                    return;
+
+                final int selectedResolutionIndex = Resolution.change(this.getResolutionIndex(), isIncrease);
+                this.getClip().setStepLength(Resolution.getValueAt(selectedResolutionIndex));
+                this.surface.getDisplay().notify(Resolution.getNameAt(this.getResolutionIndex()));
+                break;
+
+            case 11:
+                this.getClip().changeLoopLength(value, false);
+                this.surface.getDisplay().notify("Length " + this.getClip().getLoopLength());
+                break;
+
+            // Chromatic
             case 12:
-                this.changeScrollPosition (isIncrease);
+                this.scales.setChromatic(!isIncrease);
+                this.surface.getConfiguration().setScaleInKey(isIncrease);
+                this.surface.getDisplay().notify(isIncrease ? "In Key" : "Chromatic");
                 break;
 
+            // Base Note
             case 13:
-                this.changeResolution (value);
-                this.surface.getDisplay ().notify (Resolution.getNameAt (this.getResolutionIndex ()));
-                break;
-
-            // Up/Down
-            case 14:
-                this.keyManager.clearPressedKeys ();
                 if (isIncrease)
-                    this.scales.incOctave ();
+                    this.scales.nextScaleOffset();
                 else
-                    this.scales.decOctave ();
-                this.updateNoteMapping ();
-                this.surface.getDisplay ().notify (this.scales.getRangeText ());
+                    this.scales.prevScaleOffset();
+                final String scaleBase = Scales.BASES.get(this.scales.getScaleOffsetIndex());
+                this.surface.getDisplay().notify(scaleBase);
+                this.surface.getConfiguration().setScaleBase(scaleBase);
                 break;
 
-            // Toggle play / sequencer
+            // Scale
+            case 14:
+                if (isIncrease)
+                    this.scales.nextScale();
+                else
+                    this.scales.prevScale();
+                final String scale = this.scales.getScale().getName();
+                this.surface.getConfiguration().setScale(scale);
+                this.surface.getDisplay().notify(scale);
+                break;
+
+            // Octave
             case 15:
-                this.isPlayMode = !isIncrease;
-                this.surface.getDisplay ().notify (this.isPlayMode ? "Play/Select" : "Sequence");
-                this.updateNoteMapping ();
+                this.keyManager.clearPressedKeys();
+                if (isIncrease)
+                    this.scales.incOctave();
+                else
+                    this.scales.decOctave();
+                this.updateNoteMapping();
+                this.surface.getDisplay().notify("Octave " + (this.scales.getOctave() > 0 ? "+" : "")
+                        + this.scales.getOctave() + " (" + this.scales.getRangeText() + ")");
                 break;
 
             // 0-11
@@ -91,111 +149,91 @@ public class SequencerView extends BaseSequencerView
         }
     }
 
-
     /** {@inheritDoc} */
     @Override
-    public void onGridNote (final int note, final int velocity)
-    {
-        if (!this.model.canSelectedTrackHoldNotes ())
+    public void onGridNote(final int note, final int velocity) {
+        if (!this.model.canSelectedTrackHoldNotes())
             return;
 
-        final int index = note - 36;
-
-        if (this.isPlayMode)
-        {
-            this.selectedPad = index; // 0-16
-
-            // Mark selected notes
-            for (int i = 0; i < 128; i++)
-            {
-                if (this.keyManager.map (note) == this.keyManager.map (i))
-                    this.keyManager.setKeyPressed (i, velocity);
+        if (velocity == 0) {
+            if (this.gridNotePressed) {
+                this.activeStep = (this.activeStep + 1) % this.getClip().getNumSteps();
             }
-        }
-        else
-        {
-            if (velocity != 0)
-            {
-                final int step = index < 8 ? index + 8 : index - 8;
-                final int y = this.offsetY + this.selectedPad;
-                final int map = this.scales.getNoteMatrix ()[y];
-                final NotePosition notePosition = new NotePosition (this.configuration.getMidiEditChannel (), step, map);
-                this.getClip ().toggleStep (notePosition, this.configuration.isAccentActive () ? this.configuration.getFixedAccentValue () : velocity);
-            }
-        }
-    }
-
-
-    /** {@inheritDoc} */
-    @Override
-    public void updateNoteMapping ()
-    {
-        this.delayedUpdateNoteMapping (this.model.canSelectedTrackHoldNotes () && this.isPlayMode ? this.scales.getNoteMatrix () : Scales.getEmptyMatrix ());
-    }
-
-
-    /** {@inheritDoc} */
-    @Override
-    public void drawGrid ()
-    {
-        final IPadGrid padGrid = this.surface.getPadGrid ();
-        if (!this.model.canSelectedTrackHoldNotes ())
-        {
-            padGrid.turnOff ();
+            this.gridNotePressed = false;
             return;
         }
 
-        if (this.isPlayMode)
-        {
-            for (int i = 36; i < 52; i++)
-            {
-                padGrid.light (i, this.keyManager.isKeyPressed (i) || this.selectedPad == i - 36 ? BeatstepColorManager.BEATSTEP_BUTTON_STATE_PINK : this.colorManager.getColorIndex (this.keyManager.getColor (i)));
+        if (!this.gridNotePressed) {
+            final int channel = this.configuration.getMidiEditChannel();
+            for (int i = 0; i < 128; i++) {
+                this.getClip().clearStep(new NotePosition(channel, this.activeStep, note));
             }
         }
-        else
-        {
-            final INoteClip clip = this.getClip ();
-            // Paint the sequencer steps
-            final int step = clip.getCurrentStep ();
-            final int hiStep = this.isInXRange (step) ? step % SequencerView.NUM_DISPLAY_COLS : -1;
-            final NotePosition notePosition = new NotePosition (this.configuration.getMidiEditChannel (), 0, 0);
-            for (int col = 0; col < SequencerView.NUM_DISPLAY_COLS; col++)
-            {
-                notePosition.setStep (col);
-                notePosition.setNote (this.scales.getNoteMatrix ()[this.offsetY + this.selectedPad]);
-                final StepState stepState = clip.getStep (notePosition).getState ();
-                padGrid.lightEx (col % 8, 1 - col / 8, getSequencerColor (stepState, col == hiStep));
-            }
+
+        this.gridNotePressed = true;
+
+        int mappedNote = this.keyManager.map(note);
+        // Mark selected notes
+        for (int i = 0; i < 128; i++) {
+            if (mappedNote == this.keyManager.map(i))
+                this.keyManager.setKeyPressed(i, velocity);
+        }
+
+        if (velocity != 0) {
+            final int map = this.scales.getNoteMatrix()[note];
+            final NotePosition notePosition = new NotePosition(this.configuration.getMidiEditChannel(), this.activeStep,
+                    map);
+            this.getClip().toggleStep(notePosition,
+                    this.configuration.isAccentActive() ? this.configuration.getFixedAccentValue() : velocity);
         }
     }
 
-
-    private static int getSequencerColor (final StepState stepState, final boolean hilite)
-    {
-        if (stepState != StepState.OFF)
-            return hilite ? BeatstepColorManager.BEATSTEP_BUTTON_STATE_PINK : BeatstepColorManager.BEATSTEP_BUTTON_STATE_BLUE;
-        return hilite ? BeatstepColorManager.BEATSTEP_BUTTON_STATE_PINK : BeatstepColorManager.BEATSTEP_BUTTON_STATE_OFF;
+    /** {@inheritDoc} */
+    @Override
+    public void updateNoteMapping() {
+        this.delayedUpdateNoteMapping(
+                this.model.canSelectedTrackHoldNotes() ? this.scales.getNoteMatrix()
+                        : Scales.getEmptyMatrix());
     }
 
+    /** {@inheritDoc} */
+    @Override
+    public void drawGrid() {
+        final IPadGrid padGrid = this.surface.getPadGrid();
+        if (!this.model.canSelectedTrackHoldNotes()) {
+            padGrid.turnOff();
+            return;
+        }
+
+        int[] noteMatrix = this.scales.getNoteMatrix();
+
+        for (int i = 36; i < 52; i++) {
+            final NotePosition notePosition = new NotePosition(this.configuration.getMidiEditChannel(), this.activeStep,
+                    noteMatrix[i]);
+            IStepInfo step = this.getClip().getStep(notePosition);
+            padGrid.light(i,
+                    this.keyManager.isKeyPressed(i) || step.getState() != StepState.OFF
+                            ? BeatstepColorManager.BEATSTEP_BUTTON_STATE_PINK
+                            : this.colorManager.getColorIndex(this.keyManager.getColor(i)));
+        }
+    }
 
     /**
      * The callback function for playing note changes.
      *
      * @param trackIndex The index of the track on which the note is playing
-     * @param note The played note
-     * @param velocity The played velocity
+     * @param note       The played note
+     * @param velocity   The played velocity
      */
-    private void updateNote (final int trackIndex, final int note, final int velocity)
-    {
-        final Optional<ITrack> sel = this.model.getCurrentTrackBank ().getSelectedItem ();
-        if (sel.isEmpty () || sel.get ().getIndex () != trackIndex)
+    private void updateNote(final int trackIndex, final int note, final int velocity) {
+        final Optional<ITrack> sel = this.model.getCurrentTrackBank().getSelectedItem();
+        if (sel.isEmpty() || sel.get().getIndex() != trackIndex)
             return;
 
         // Light notes sent from the sequencer
-        for (int i = 0; i < 128; i++)
-        {
-            if (this.keyManager.map (i) == note)
-                this.keyManager.setKeyPressed (i, velocity);
+        for (int i = 0; i < 128; i++) {
+            if (this.keyManager.map(i) == note)
+                this.keyManager.setKeyPressed(i, velocity);
         }
     }
 }

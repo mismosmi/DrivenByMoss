@@ -88,6 +88,13 @@ public class BrowserView extends AbstractView<BeatstepControlSurface, BeatstepCo
         }
     }
 
+    /** 
+     * Master knob has no function in BrowserView.
+     */
+    public void onMasterKnob (final int value) {
+        // ignore
+    }
+
 
     /** {@inheritDoc} */
     @Override

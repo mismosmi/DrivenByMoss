@@ -16,6 +16,7 @@ import de.mossgrabers.framework.daw.clip.StepState;
 import de.mossgrabers.framework.daw.constants.Resolution;
 import de.mossgrabers.framework.daw.data.IChannel;
 import de.mossgrabers.framework.daw.data.IDrumDevice;
+import de.mossgrabers.framework.daw.data.IDrumPad;
 import de.mossgrabers.framework.daw.data.ITrack;
 import de.mossgrabers.framework.daw.data.bank.IDrumPadBank;
 import de.mossgrabers.framework.daw.data.bank.ITrackBank;
@@ -92,6 +93,20 @@ public class DrumView extends BaseSequencerView
                 this.extensions.onTrackKnob (index, value);
                 break;
         }
+    }
+
+    /**
+     * Master Knob switches drum sounds in Drum Mode
+     * 
+     * @param value How fast to switch through sounds
+     */
+    public void onMasterKnob(final int value) {
+        this.selectedPad = (this.selectedPad + NUM_DISPLAY_COLS + 1) % NUM_DISPLAY_COLS;
+
+        IDrumDevice drums = this.model.getDrumDevice();
+        IDrumPad pad = drums.getDrumPadBank().getItem(this.selectedPad);
+
+        this.surface.getDisplay().notify("Select " + pad.getName(10));
     }
 
 

@@ -18,4 +18,11 @@ public interface BeatstepView
      * @param value The knobs value
      */
     void onKnob (int index, int value);
+
+    /**
+     * Master knob has been turned.
+     * 
+     * @param value The value
+     */
+    void onMasterKnob (int value);
 }

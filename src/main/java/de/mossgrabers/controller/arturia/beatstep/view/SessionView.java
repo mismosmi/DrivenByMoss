@@ -45,6 +45,11 @@ public class SessionView extends AbstractView<BeatstepControlSurface, BeatstepCo
             this.extensions.onTrackKnob (index, value);
     }
 
+    /** {@inheritDoc} */
+    public void onMasterKnob(final int value) {
+        this.model.getTransport().changePosition(this.model.getValueChanger().isIncrease(value), this.surface.isKnobSensitivitySlow());
+    }
+
 
     /** {@inheritDoc} */
     @Override

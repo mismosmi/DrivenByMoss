@@ -93,6 +93,11 @@ public class PlayView extends AbstractPlayView<BeatstepControlSurface, BeatstepC
         this.updateNoteMapping ();
     }
 
+    /** {@inheritDoc} */
+    public void onMasterKnob(final int value) {
+        this.model.getTransport().changePosition(this.model.getValueChanger().isIncrease(value), this.surface.isKnobSensitivitySlow());
+    }
+
 
     /** {@inheritDoc} */
     @Override

@@ -155,4 +155,12 @@ public class ShiftView extends AbstractView<BeatstepControlSurface, BeatstepConf
     {
         // Knobs not used in Shift view
     }
+
+    /**
+     * Master Knob _must_ not be used in shift mode
+     * otherwise beatstep-internal transposition will mess up controls.
+     */
+    public void onMasterKnob(final int value) {
+        this.model.getHost().error("Master knob must not be used in shift mode.");
+    }
 }

@@ -15,6 +15,7 @@ import de.mossgrabers.framework.daw.data.ICursorDevice;
 import de.mossgrabers.framework.daw.data.ILayer;
 import de.mossgrabers.framework.daw.data.bank.IChannelBank;
 import de.mossgrabers.framework.daw.data.bank.IParameterPageBank;
+import de.mossgrabers.framework.daw.data.bank.ITrackBank;
 import de.mossgrabers.framework.featuregroup.AbstractView;
 
 
@@ -55,6 +56,22 @@ public class DeviceView extends AbstractView<BeatstepControlSurface, BeatstepCon
         }
 
         cd.getParameterBank ().getItem (index - 8).changeValue (value);
+    }
+
+    /**
+     * Master Knob switches tracks in Device View.
+     * 
+     * @param value how fast to switch tracks
+     */
+    public void onMasterKnob(final int value)
+    {
+        ITrackBank trackBank =  this.model.getCurrentTrackBank();
+        if (this.model.getValueChanger().isIncrease(value)) {
+            trackBank.selectNextItem();
+        } else {
+            trackBank.selectPreviousItem();
+        }
+
     }
 
 

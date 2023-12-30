@@ -106,7 +106,7 @@ public class SequencerView extends AbstractSequencerView<BeatstepControlSurface,
                 break;
 
             case 11:
-                this.getClip().changeLoopLength(value, false);
+                this.getClip().changeLoopLength(value, this.surface.isKnobSensitivitySlow());
                 this.surface.getDisplay().notify("Length " + this.getClip().getLoopLength());
                 break;
 
@@ -156,6 +156,11 @@ public class SequencerView extends AbstractSequencerView<BeatstepControlSurface,
                 this.extensions.onTrackKnob (index, value);
                 break;
         }
+    }
+
+    /** {@inheritDoc} */
+    public void onMasterKnob(final int value) {
+        this.model.getTransport().changePosition(this.model.getValueChanger().isIncrease(value), this.surface.isKnobSensitivitySlow());
     }
 
     /** {@inheritDoc} */

@@ -7,6 +7,7 @@ package de.mossgrabers.controller.arturia.beatstep;
 import java.util.Optional;
 
 import de.mossgrabers.controller.arturia.beatstep.command.continuous.KnobRowViewCommand;
+import de.mossgrabers.controller.arturia.beatstep.command.continuous.MasterKnobViewCommand;
 import de.mossgrabers.controller.arturia.beatstep.controller.BeatstepColorManager;
 import de.mossgrabers.controller.arturia.beatstep.controller.BeatstepControlSurface;
 import de.mossgrabers.controller.arturia.beatstep.controller.BeatstepPadGrid;
@@ -19,7 +20,6 @@ import de.mossgrabers.controller.arturia.beatstep.view.SessionView;
 import de.mossgrabers.controller.arturia.beatstep.view.ShiftView;
 import de.mossgrabers.controller.arturia.beatstep.view.TrackView;
 import de.mossgrabers.framework.command.aftertouch.AftertouchViewCommand;
-import de.mossgrabers.framework.command.continuous.PlayPositionCommand;
 import de.mossgrabers.framework.configuration.ISettingsUI;
 import de.mossgrabers.framework.controller.AbstractControllerSetup;
 import de.mossgrabers.framework.controller.ButtonID;
@@ -228,7 +228,7 @@ public class BeatstepControllerSetup extends AbstractControllerSetup<BeatstepCon
             this.addRelativeKnob (ContinuousID.get (ContinuousID.DEVICE_KNOB1, i), "Knob " + (i + 9), new KnobRowViewCommand (i + 8, this.model, surface), BindType.CC, 2, BeatstepControlSurface.BEATSTEP_KNOB_9 + i, RelativeEncoding.OFFSET_BINARY);
         }
 
-        this.addRelativeKnob (ContinuousID.MASTER_KNOB, "Master", new PlayPositionCommand<> (this.model, surface), BindType.CC, 2, BeatstepControlSurface.BEATSTEP_KNOB_MAIN, RelativeEncoding.OFFSET_BINARY);
+        this.addRelativeKnob (ContinuousID.MASTER_KNOB, "Master", new MasterKnobViewCommand(this.model, surface), BindType.CC, 2, BeatstepControlSurface.BEATSTEP_KNOB_MAIN, RelativeEncoding.OFFSET_BINARY);
 
         final PlayView playView = (PlayView) viewManager.get (Views.PLAY);
         playView.registerAftertouchCommand (new AftertouchViewCommand<> (playView, this.model, surface));

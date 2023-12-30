@@ -76,6 +76,11 @@ public class TrackView extends AbstractView<BeatstepControlSurface, BeatstepConf
         }
     }
 
+    /** {@inheritDoc} */
+    public void onMasterKnob(final int value) {
+        this.model.getTransport().changePosition(this.model.getValueChanger().isIncrease(value), this.surface.isKnobSensitivitySlow());
+    }
+
 
     /** {@inheritDoc} */
     @Override

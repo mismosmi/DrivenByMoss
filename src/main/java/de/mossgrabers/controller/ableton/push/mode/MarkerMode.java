@@ -1,5 +1,5 @@
 // Written by Jürgen Moßgraber - mossgrabers.de
-// (c) 2017-2023
+// (c) 2017-2024
 // Licensed under LGPLv3 - http://www.gnu.org/licenses/lgpl-3.0.txt
 
 package de.mossgrabers.controller.ableton.push.mode;
@@ -14,6 +14,7 @@ import de.mossgrabers.framework.daw.data.IMarker;
 import de.mossgrabers.framework.daw.data.bank.IMarkerBank;
 import de.mossgrabers.framework.featuregroup.AbstractFeatureGroup;
 import de.mossgrabers.framework.featuregroup.AbstractMode;
+import de.mossgrabers.framework.parameterprovider.track.VolumeParameterProvider;
 import de.mossgrabers.framework.utils.ButtonEvent;
 import de.mossgrabers.framework.utils.StringUtils;
 
@@ -49,6 +50,8 @@ public class MarkerMode extends BaseMode<IMarker>
     public MarkerMode (final PushControlSurface surface, final IModel model)
     {
         super ("Marker", surface, model, model.getMarkerBank ());
+
+        this.setParameterProvider (new VolumeParameterProvider (model));
     }
 
 

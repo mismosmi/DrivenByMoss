@@ -1,5 +1,5 @@
 // Written by Jürgen Moßgraber - mossgrabers.de
-// (c) 2017-2023
+// (c) 2017-2024
 // Licensed under LGPLv3 - http://www.gnu.org/licenses/lgpl-3.0.txt
 
 package de.mossgrabers.framework.controller.display;
@@ -28,13 +28,13 @@ public abstract class AbstractTextDisplay implements ITextDisplay
     protected int            noOfCharacters;
     protected int            charactersOfCell;
 
-    protected final String   emptyLine;
+    protected String         emptyLine;
     protected String         notificationMessage;
     protected boolean        centerNotification  = true;
     protected int            notificationTimeout = 0;
     protected final Object   notificationLock    = new Object ();
 
-    private final String     emptyCell;
+    protected String         emptyCell;
     protected String []      currentMessage;
     protected String []      message;
     protected String []      fullRows;
@@ -57,6 +57,19 @@ public abstract class AbstractTextDisplay implements ITextDisplay
         this.host = host;
         this.output = output;
 
+        this.setNumberOfCells (noOfLines, noOfCells, noOfCharacters);
+    }
+
+
+    /**
+     * Set the line and cell numbers.
+     *
+     * @param noOfLines The number of rows that the display supports
+     * @param noOfCells The number of cells that the display supports
+     * @param noOfCharacters The number of characters of 1 row that the display supports
+     */
+    protected void setNumberOfCells (final int noOfLines, final int noOfCells, final int noOfCharacters)
+    {
         this.noOfLines = noOfLines;
         this.noOfCells = noOfCells;
         this.noOfCharacters = noOfCharacters;
@@ -79,9 +92,17 @@ public abstract class AbstractTextDisplay implements ITextDisplay
 
     /** {@inheritDoc} */
     @Override
-    public int getNoOfLines ()
+    public int getNumberOfLines ()
     {
         return this.noOfLines;
+    }
+
+
+    /** {@inheritDoc} */
+    @Override
+    public int getNumberOfCellCharacters ()
+    {
+        return this.noOfCharacters;
     }
 
 

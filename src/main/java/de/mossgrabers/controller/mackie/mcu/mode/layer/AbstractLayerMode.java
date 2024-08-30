@@ -1,5 +1,5 @@
 // Written by Jürgen Moßgraber - mossgrabers.de
-// (c) 2017-2023
+// (c) 2017-2024
 // Licensed under LGPLv3 - http://www.gnu.org/licenses/lgpl-3.0.txt
 
 package de.mossgrabers.controller.mackie.mcu.mode.layer;
@@ -36,6 +36,9 @@ public abstract class AbstractLayerMode extends BaseMode<ILayer>
     protected AbstractLayerMode (final String name, final MCUControlSurface surface, final IModel model)
     {
         super (name, surface, model, getDevice (model).getLayerBank ());
+
+        final ISpecificDevice device = getDevice (model);
+        device.addHasDrumPadsObserver (hasDrumPads -> this.switchBanks (device.hasDrumPads () ? device.getDrumPadBank () : device.getLayerBank ()));
     }
 
 
@@ -43,8 +46,8 @@ public abstract class AbstractLayerMode extends BaseMode<ILayer>
     @Override
     protected void drawTrackNameHeader ()
     {
-        final ISpecificDevice cursorDevice = getDevice (this.model);
-        final IChannelBank<? extends IChannel> layerBank = cursorDevice.hasDrumPads () ? cursorDevice.getDrumPadBank () : cursorDevice.getLayerBank ();
+        final ISpecificDevice device = getDevice (this.model);
+        final IChannelBank<? extends IChannel> layerBank = device.hasDrumPads () ? device.getDrumPadBank () : device.getLayerBank ();
 
         final int extenderOffset = this.getExtenderOffset ();
 
@@ -82,8 +85,8 @@ public abstract class AbstractLayerMode extends BaseMode<ILayer>
             return;
         }
 
-        final ISpecificDevice cursorDevice = getDevice (this.model);
-        final IChannelBank<? extends IChannel> layerBank = cursorDevice.hasDrumPads () ? cursorDevice.getDrumPadBank () : cursorDevice.getLayerBank ();
+        final ISpecificDevice device = getDevice (this.model);
+        final IChannelBank<? extends IChannel> layerBank = device.hasDrumPads () ? device.getDrumPadBank () : device.getLayerBank ();
         final IChannel channel = layerBank.getItem (this.getExtenderOffset () + index);
         if (row == 2)
         {
@@ -109,8 +112,8 @@ public abstract class AbstractLayerMode extends BaseMode<ILayer>
         if (this.pinFXtoLastDevice)
             return super.getButtonColor (buttonID);
 
-        final ISpecificDevice cursorDevice = getDevice (this.model);
-        final IChannelBank<? extends IChannel> layerBank = cursorDevice.hasDrumPads () ? cursorDevice.getDrumPadBank () : cursorDevice.getLayerBank ();
+        final ISpecificDevice device = getDevice (this.model);
+        final IChannelBank<? extends IChannel> layerBank = device.hasDrumPads () ? device.getDrumPadBank () : device.getLayerBank ();
 
         final int extenderOffset = this.getExtenderOffset ();
         for (int i = 0; i < 8; i++)
@@ -135,5 +138,32 @@ public abstract class AbstractLayerMode extends BaseMode<ILayer>
     protected static final ISpecificDevice getDevice (final IModel model)
     {
         return model.getSpecificDevice (DeviceID.FIRST_INSTRUMENT);
+    }
+
+
+    /** {@inheritDoc} */
+    @Override
+    public void updateDisplay ()
+    {
+        super.updateDisplay ();
+        this.updateItemIndices ();
+    }
+
+
+    protected void updateItemIndices ()
+    {
+        final ISpecificDevice device = getDevice (this.model);
+        final IChannelBank<? extends IChannel> layerBank = device.hasDrumPads () ? device.getDrumPadBank () : device.getLayerBank ();
+        final int extenderOffset = this.getExtenderOffset ();
+        final int [] indices = new int [8];
+        for (int i = 0; i < 8; i++)
+        {
+            final IChannel item = layerBank.getItem (extenderOffset + i);
+            if (item.doesExist ())
+                indices[i] = item.getPosition () + (device.hasDrumPads () ? 0 : 1);
+            else
+                indices[i] = 0;
+        }
+        this.surface.setItemIndices (indices);
     }
 }

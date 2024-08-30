@@ -1,8 +1,10 @@
 // Written by Jürgen Moßgraber - mossgrabers.de
-// (c) 2017-2023
+// (c) 2017-2024
 // Licensed under LGPLv3 - http://www.gnu.org/licenses/lgpl-3.0.txt
 
 package de.mossgrabers.controller.akai.apc;
+
+import java.util.List;
 
 import de.mossgrabers.framework.configuration.AbstractConfiguration;
 import de.mossgrabers.framework.configuration.ISettingsUI;
@@ -11,8 +13,6 @@ import de.mossgrabers.framework.daw.IHost;
 import de.mossgrabers.framework.daw.constants.Capability;
 import de.mossgrabers.framework.daw.midi.ArpeggiatorMode;
 import de.mossgrabers.framework.view.Views;
-
-import java.util.List;
 
 
 /**
@@ -77,8 +77,13 @@ public class APCConfiguration extends AbstractConfiguration
         // Play and Sequence
 
         this.activateQuantizeAmountSetting (globalSettings);
-        this.activatePreferredNoteViewSetting (globalSettings, PREFERRED_NOTE_VIEWS);
+        this.activateStartupViewSetting (globalSettings, PREFERRED_NOTE_VIEWS);
         this.activateStartWithSessionViewSetting (globalSettings);
+        if (this.isMkII)
+        {
+            this.activateTurnOffScalePadsSetting (globalSettings);
+            this.activateShowPlayedChordsSetting (globalSettings);
+        }
 
         ///////////////////////////
         // Transport

@@ -1,8 +1,16 @@
 // Written by Jürgen Moßgraber - mossgrabers.de
-// (c) 2017-2023
+// (c) 2017-2024
 // Licensed under LGPLv3 - http://www.gnu.org/licenses/lgpl-3.0.txt
 
 package de.mossgrabers.framework.featuregroup;
+
+import java.util.Collections;
+import java.util.EnumMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Optional;
+import java.util.function.BooleanSupplier;
 
 import de.mossgrabers.framework.configuration.Configuration;
 import de.mossgrabers.framework.controller.ButtonID;
@@ -17,14 +25,6 @@ import de.mossgrabers.framework.parameter.IParameter;
 import de.mossgrabers.framework.parameterprovider.IParameterProvider;
 import de.mossgrabers.framework.utils.ButtonEvent;
 import de.mossgrabers.framework.utils.FrameworkException;
-
-import java.util.Collections;
-import java.util.EnumMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Optional;
-import java.util.function.BooleanSupplier;
 
 
 /**
@@ -42,6 +42,7 @@ public abstract class AbstractParameterMode<S extends IControlSurface<C>, C exte
     public static final List<ContinuousID>      DEFAULT_KNOB_IDS   = Collections.unmodifiableList (ContinuousID.createSequentialList (ContinuousID.KNOB1, 8));
 
     protected BooleanSupplier                   isAlternativeFunction;
+    protected boolean                           scrollBank         = false;
 
     protected IParameterProvider                defaultParameterProvider;
     protected Map<ButtonID, IParameterProvider> parameterProviders = new EnumMap<> (ButtonID.class);
@@ -270,7 +271,11 @@ public abstract class AbstractParameterMode<S extends IControlSurface<C>, C exte
             return;
         }
 
-        if (this.bank != null)
+        if (this.bank == null)
+            return;
+        if (this.scrollBank)
+            this.bank.scrollBackwards ();
+        else
             this.bank.selectPreviousItem ();
     }
 
@@ -285,7 +290,11 @@ public abstract class AbstractParameterMode<S extends IControlSurface<C>, C exte
             return;
         }
 
-        if (this.bank != null)
+        if (this.bank == null)
+            return;
+        if (this.scrollBank)
+            this.bank.scrollForwards ();
+        else
             this.bank.selectNextItem ();
     }
 

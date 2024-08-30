@@ -1,8 +1,10 @@
 // Written by Jürgen Moßgraber - mossgrabers.de
-// (c) 2017-2023
+// (c) 2017-2024
 // Licensed under LGPLv3 - http://www.gnu.org/licenses/lgpl-3.0.txt
 
 package de.mossgrabers.controller.ni.maschine.mk3;
+
+import java.util.List;
 
 import de.mossgrabers.controller.ni.maschine.Maschine;
 import de.mossgrabers.controller.ni.maschine.core.RibbonMode;
@@ -13,8 +15,7 @@ import de.mossgrabers.framework.controller.valuechanger.IValueChanger;
 import de.mossgrabers.framework.daw.IHost;
 import de.mossgrabers.framework.daw.midi.ArpeggiatorMode;
 import de.mossgrabers.framework.scale.ScaleLayout;
-
-import java.util.List;
+import de.mossgrabers.framework.view.Views;
 
 
 /**
@@ -24,15 +25,21 @@ import java.util.List;
  */
 public class MaschineConfiguration extends AbstractConfiguration
 {
-    /** Setting for the ribbon mode. */
-    public static final Integer RIBBON_MODE = Integer.valueOf (50);
+    private static final Views [] PREFERRED_NOTE_VIEWS =
+    {
+        Views.PLAY,
+        Views.DRUM
+    };
 
-    private final Maschine      maschine;
+    /** Setting for the ribbon mode. */
+    public static final Integer   RIBBON_MODE          = Integer.valueOf (50);
+
+    private final Maschine        maschine;
 
     /** What does the ribbon send? **/
-    private RibbonMode          ribbonMode  = RibbonMode.PITCH_DOWN;
+    private RibbonMode            ribbonMode           = RibbonMode.PITCH_DOWN;
 
-    private IEnumSetting        ribbonModeSetting;
+    private IEnumSetting          ribbonModeSetting;
 
 
     /**
@@ -81,6 +88,9 @@ public class MaschineConfiguration extends AbstractConfiguration
         this.activateAccentActiveSetting (globalSettings);
         this.activateAccentValueSetting (globalSettings);
         this.activateQuantizeAmountSetting (globalSettings);
+        this.activateTurnOffScalePadsSetting (globalSettings);
+        this.activateShowPlayedChordsSetting (globalSettings);
+        this.activateStartupViewSetting (globalSettings, PREFERRED_NOTE_VIEWS);
 
         final String [] ribbonModeNames = RibbonMode.getNames ();
         this.ribbonModeSetting = globalSettings.getEnumSetting ("Ribbon Mode", CATEGORY_PLAY_AND_SEQUENCE, ribbonModeNames, ribbonModeNames[0]);

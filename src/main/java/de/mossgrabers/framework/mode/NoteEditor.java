@@ -1,5 +1,5 @@
 // Written by Jürgen Moßgraber - mossgrabers.de
-// (c) 2017-2023
+// (c) 2017-2024
 // Licensed under LGPLv3 - http://www.gnu.org/licenses/lgpl-3.0.txt
 
 package de.mossgrabers.framework.mode;
@@ -16,7 +16,7 @@ import java.util.List;
  *
  * @author Jürgen Moßgraber
  */
-public class NoteEditor implements INoteMode
+public class NoteEditor implements INoteEditor
 {
     private INoteClip                clip  = null;
     private final List<NotePosition> notes = new ArrayList<> ();
@@ -60,13 +60,22 @@ public class NoteEditor implements INoteMode
     @Override
     public void addNote (final INoteClip clip, final NotePosition notePosition)
     {
+        // Is the note already edited? Remove it.
+        this.removeNote (clip, notePosition);
+        this.notes.add (new NotePosition (notePosition.getChannel (), notePosition.getStep (), notePosition.getNote ()));
+    }
+
+
+    /** {@inheritDoc} */
+    @Override
+    public void removeNote (final INoteClip clip, final NotePosition notePosition)
+    {
         if (this.clip != clip)
         {
             this.notes.clear ();
             this.clip = clip;
         }
 
-        // Is the note already edited? Remove it.
         for (final NotePosition gridStep: this.notes)
         {
             if (gridStep.equals (notePosition))
@@ -75,8 +84,22 @@ public class NoteEditor implements INoteMode
                 return;
             }
         }
+    }
 
-        this.notes.add (new NotePosition (notePosition.getChannel (), notePosition.getStep (), notePosition.getNote ()));
+
+    /** {@inheritDoc} */
+    @Override
+    public boolean isNoteEdited (final INoteClip clip, final NotePosition notePosition)
+    {
+        if (this.clip != clip)
+            return false;
+
+        for (final NotePosition gridStep: this.notes)
+        {
+            if (gridStep.equals (notePosition))
+                return true;
+        }
+        return false;
     }
 
 

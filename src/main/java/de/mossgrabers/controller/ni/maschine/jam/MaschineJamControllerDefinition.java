@@ -1,16 +1,16 @@
 // Written by Jürgen Moßgraber - mossgrabers.de
-// (c) 2017-2023
+// (c) 2017-2024
 // Licensed under LGPLv3 - http://www.gnu.org/licenses/lgpl-3.0.txt
 
 package de.mossgrabers.controller.ni.maschine.jam;
 
-import de.mossgrabers.framework.controller.DefaultControllerDefinition;
-import de.mossgrabers.framework.utils.OperatingSystem;
-import de.mossgrabers.framework.utils.Pair;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+
+import de.mossgrabers.framework.controller.DefaultControllerDefinition;
+import de.mossgrabers.framework.utils.OperatingSystem;
+import de.mossgrabers.framework.utils.Pair;
 
 
 /**
@@ -41,7 +41,7 @@ public class MaschineJamControllerDefinition extends DefaultControllerDefinition
 
         switch (os)
         {
-            case MAC:
+            case MAC, MAC_ARM:
                 for (int i = 1; i <= 4; i++)
                     pairs.add (this.addDeviceDiscoveryPair (MASCHINE_JAM_PREFIX + i + " Input", MASCHINE_JAM_PREFIX + i + " Output"));
                 break;

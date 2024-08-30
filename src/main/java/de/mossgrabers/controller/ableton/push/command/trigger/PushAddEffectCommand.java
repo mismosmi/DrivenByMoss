@@ -1,5 +1,5 @@
 // Written by Jürgen Moßgraber - mossgrabers.de
-// (c) 2017-2023
+// (c) 2017-2024
 // Licensed under LGPLv3 - http://www.gnu.org/licenses/lgpl-3.0.txt
 
 package de.mossgrabers.controller.ableton.push.command.trigger;
@@ -39,13 +39,16 @@ public class PushAddEffectCommand extends AddEffectCommand<PushControlSurface, P
     @Override
     public void execute (final ButtonEvent event, final int velocity)
     {
-        if (this.surface.isSelectPressed () && event == ButtonEvent.UP)
+        if (this.surface.isSelectPressed ())
         {
-            final ModeManager modeManager = this.surface.getModeManager ();
-            final AddTrackMode mode = (AddTrackMode) modeManager.get (Modes.ADD_TRACK);
-            mode.setAddMode (AddMode.DEVICE);
-            modeManager.setActive (Modes.ADD_TRACK);
             this.surface.setTriggerConsumed (ButtonID.SELECT);
+            if (event == ButtonEvent.UP)
+            {
+                final ModeManager modeManager = this.surface.getModeManager ();
+                final AddTrackMode mode = (AddTrackMode) modeManager.get (Modes.ADD_TRACK);
+                mode.setAddMode (AddMode.DEVICE);
+                modeManager.setActive (Modes.ADD_TRACK);
+            }
             return;
         }
 

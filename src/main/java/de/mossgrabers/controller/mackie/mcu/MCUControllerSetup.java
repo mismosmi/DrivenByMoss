@@ -1,5 +1,5 @@
 // Written by Jürgen Moßgraber - mossgrabers.de
-// (c) 2017-2023
+// (c) 2017-2024
 // Licensed under LGPLv3 - http://www.gnu.org/licenses/lgpl-3.0.txt
 
 package de.mossgrabers.controller.mackie.mcu;
@@ -10,6 +10,9 @@ import java.util.EnumSet;
 import java.util.Map;
 import java.util.Set;
 
+import de.mossgrabers.controller.mackie.mcu.MCUConfiguration.MainDisplay;
+import de.mossgrabers.controller.mackie.mcu.MCUConfiguration.SecondDisplay;
+import de.mossgrabers.controller.mackie.mcu.MCUConfiguration.VUMeterStyle;
 import de.mossgrabers.controller.mackie.mcu.command.trigger.AssignableCommand;
 import de.mossgrabers.controller.mackie.mcu.command.trigger.DevicesCommand;
 import de.mossgrabers.controller.mackie.mcu.command.trigger.FaderTouchCommand;
@@ -34,6 +37,7 @@ import de.mossgrabers.controller.mackie.mcu.controller.MCUDeviceType;
 import de.mossgrabers.controller.mackie.mcu.controller.MCUDisplay;
 import de.mossgrabers.controller.mackie.mcu.controller.MCUSegmentDisplay;
 import de.mossgrabers.controller.mackie.mcu.mode.BaseMode;
+import de.mossgrabers.controller.mackie.mcu.mode.MCUMultiModeSwitcherCommand;
 import de.mossgrabers.controller.mackie.mcu.mode.MarkerMode;
 import de.mossgrabers.controller.mackie.mcu.mode.device.DeviceBrowserMode;
 import de.mossgrabers.controller.mackie.mcu.mode.device.DeviceParamsMode;
@@ -62,8 +66,6 @@ import de.mossgrabers.framework.command.trigger.application.SaveCommand;
 import de.mossgrabers.framework.command.trigger.application.UndoCommand;
 import de.mossgrabers.framework.command.trigger.clip.NewCommand;
 import de.mossgrabers.framework.command.trigger.mode.ButtonRowModeCommand;
-import de.mossgrabers.framework.command.trigger.mode.ModeSelectCommand;
-import de.mossgrabers.framework.command.trigger.track.ToggleVUCommand;
 import de.mossgrabers.framework.command.trigger.transport.AutomationModeCommand;
 import de.mossgrabers.framework.command.trigger.transport.MetronomeCommand;
 import de.mossgrabers.framework.command.trigger.transport.PlayCommand;
@@ -161,10 +163,11 @@ public class MCUControllerSetup extends AbstractControllerSetup<MCUControlSurfac
 
     private static final Set<Modes> VALUE_MODES      = EnumSet.of (Modes.VOLUME, Modes.PAN, Modes.TRACK, Modes.SEND1, Modes.SEND2, Modes.SEND3, Modes.SEND4, Modes.SEND5, Modes.SEND6, Modes.SEND7, Modes.SEND8, Modes.DEVICE_PARAMS, Modes.EQ_DEVICE_PARAMS, Modes.INSTRUMENT_DEVICE_PARAMS, Modes.USER);
 
+    private final int []            vuValues         = new int [32];
+    private final int []            vuValuesRight    = new int [32];
     private final int []            masterVuValues   = new int [2];
+    private final int []            faderValues      = new int [32];
     private int                     masterFaderValue = -1;
-    private final int []            vuValues         = new int [36];
-    private final int []            faderValues      = new int [36];
     private final int               numMCUDevices;
 
 
@@ -200,20 +203,27 @@ public class MCUControllerSetup extends AbstractControllerSetup<MCUControlSurfac
         super.flush ();
 
         this.surfaces.forEach (surface -> {
-            final ModeManager modeManager = surface.getModeManager ();
-            final Modes mode = modeManager.getActiveID ();
-            this.updateMode (mode);
+            try
+            {
+                final ModeManager modeManager = surface.getModeManager ();
+                final Modes mode = modeManager.getActiveID ();
+                this.updateMode (mode);
 
-            if (mode == null)
-                return;
+                if (mode == null)
+                    return;
 
-            this.updateVUMeters ();
-            this.updateFaders (surface.isShiftPressed ());
-            this.updateSegmentDisplay ();
+                this.updateVUMeters ();
+                this.updateFaders (surface.isShiftPressed ());
+                this.updateSegmentDisplay ();
 
-            final IMode activeOrTempMode = modeManager.getActive ();
-            if (activeOrTempMode instanceof final BaseMode<?> baseMode)
-                baseMode.updateKnobLEDs ();
+                final IMode activeOrTempMode = modeManager.getActive ();
+                if (activeOrTempMode instanceof final BaseMode<?> baseMode)
+                    baseMode.updateKnobLEDs ();
+            }
+            catch (final Exception ex)
+            {
+                this.host.error ("Error during flush.", ex);
+            }
         });
     }
 
@@ -235,6 +245,7 @@ public class MCUControllerSetup extends AbstractControllerSetup<MCUControlSurfac
             ms.setNumFxTracks (8);
             ms.setNumDeviceLayers (numReduced);
             ms.setNumDrumPadLayers (numReduced);
+            ms.setNumDevicesInBank (numReduced);
             ms.setNumParams (numReduced);
         }
         else
@@ -242,6 +253,7 @@ public class MCUControllerSetup extends AbstractControllerSetup<MCUControlSurfac
             ms.setNumTracks (8 * this.numMCUDevices);
             ms.setNumDeviceLayers (8 * this.numMCUDevices);
             ms.setNumDrumPadLayers (8 * this.numMCUDevices);
+            ms.setNumDevicesInBank (8 * this.numMCUDevices);
             ms.setNumParams (8 * this.numMCUDevices);
         }
 
@@ -278,8 +290,8 @@ public class MCUControllerSetup extends AbstractControllerSetup<MCUControlSurfac
             final IMidiInput input = midiAccess.createInput (i, null);
             final MCUControlSurface surface = new MCUControlSurface (this.surfaces, this.host, this.colorManager, this.configuration, output, input, 8 * i, isMainDevice);
             this.surfaces.add (surface);
-            surface.addTextDisplay (new MCUDisplay (this.host, output, true, deviceType == MCUDeviceType.MACKIE_EXTENDER, false));
-            surface.addTextDisplay (new MCUDisplay (this.host, output, false, false, isMainDevice));
+            surface.addTextDisplay (new MCUDisplay (this.host, output, true, deviceType == MCUDeviceType.MACKIE_EXTENDER, false, this.configuration));
+            surface.addTextDisplay (new MCUDisplay (this.host, output, false, false, isMainDevice, this.configuration));
             surface.addTextDisplay (new MCUSegmentDisplay (this.host, output));
             surface.addTextDisplay (new MCUAssignmentDisplay (this.host, output));
             surface.getModeManager ().setDefaultID (Modes.VOLUME);
@@ -376,15 +388,29 @@ public class MCUControllerSetup extends AbstractControllerSetup<MCUControlSurfac
             }
         });
 
-        this.configuration.addSettingObserver (MCUConfiguration.USE_7_CHARACTERS, () -> {
-            final boolean shouldUse7Characters = this.configuration.shouldUse7Characters ();
+        this.configuration.addSettingObserver (MCUConfiguration.MAIN_DISPLAY, () -> {
+            final MainDisplay mainDisplayType = this.configuration.getMainDisplayType ();
+            final boolean shouldUse7Characters = mainDisplayType == MainDisplay.MACKIE_7_CHARACTERS;
+            final boolean isAsparion = mainDisplayType == MainDisplay.ASPARION;
             for (int index = 0; index < this.numMCUDevices; index++)
             {
                 final MCUControlSurface surface = this.getSurface (index);
-                ((MCUDisplay) surface.getTextDisplay ()).insertSpace (!shouldUse7Characters);
+                final MCUDisplay mcuDisplay = (MCUDisplay) surface.getTextDisplay ();
+                mcuDisplay.insertSpace (!shouldUse7Characters);
+                mcuDisplay.changeDisplaySize ((isAsparion ? 12 : 7) * 8);
             }
         });
 
+        this.configuration.addSettingObserver (MCUConfiguration.SECOND_DISPLAY, () -> {
+            final boolean isAsparion = this.configuration.getSecondDisplayType () == SecondDisplay.ASPARION;
+            for (int index = 0; index < this.numMCUDevices; index++)
+            {
+                final MCUControlSurface surface = this.getSurface (index);
+                final MCUDisplay secondDisplay = (MCUDisplay) surface.getTextDisplay (1);
+                secondDisplay.updateShortSecondDisplay ();
+                secondDisplay.changeDisplaySize ((isAsparion ? 8 : 7) * 8);
+            }
+        });
         this.configuration.registerDeactivatedItemsHandler (this.model);
 
         this.activateBrowserObserver (Modes.BROWSER);
@@ -451,19 +477,19 @@ public class MCUControllerSetup extends AbstractControllerSetup<MCUControlSurfac
                 this.addButton (surface, ButtonID.PAN_SEND, "Pan", new PanCommand (this.model, surface), 0, MCUControlSurface.MCU_MODE_PAN, () -> modeManager.isActive (Modes.PAN, Modes.DEVICE_LAYER_PAN));
                 this.addButton (surface, ButtonID.SENDS, "Sends", new SendSelectCommand (this.model, surface), 0, MCUControlSurface.MCU_MODE_SENDS, () -> Modes.isSendMode (modeManager.getActiveID ()) || Modes.isLayerSendMode (modeManager.getActiveID ()));
                 this.addButton (surface, ButtonID.DEVICE, "Device", new DevicesCommand (this.model, surface), 0, MCUControlSurface.MCU_MODE_PLUGIN, () -> surface.getButton (ButtonID.SELECT).isPressed () ? cursorDevice.isPinned () : modeManager.isActive (Modes.DEVICE_PARAMS, Modes.USER));
-                this.addButton (surface, ButtonID.PAGE_LEFT, "EQ", new ModeSelectCommand<> (this.model, surface, Modes.EQ_DEVICE_PARAMS), 0, MCUControlSurface.MCU_MODE_EQ, () -> modeManager.isActive (Modes.EQ_DEVICE_PARAMS));
-                this.addButton (surface, ButtonID.PAGE_RIGHT, "INST", new ModeSelectCommand<> (this.model, surface, Modes.INSTRUMENT_DEVICE_PARAMS), 0, MCUControlSurface.MCU_MODE_DYN, () -> modeManager.isActive (Modes.INSTRUMENT_DEVICE_PARAMS));
+                this.addButton (surface, ButtonID.PAGE_LEFT, "EQ", new MCUMultiModeSwitcherCommand (this.model, surface, Modes.EQ_DEVICE_PARAMS), 0, MCUControlSurface.MCU_MODE_EQ, () -> modeManager.isActive (Modes.EQ_DEVICE_PARAMS));
+                this.addButton (surface, ButtonID.PAGE_RIGHT, "INST", new MCUMultiModeSwitcherCommand (this.model, surface, Modes.INSTRUMENT_DEVICE_PARAMS), 0, MCUControlSurface.MCU_MODE_DYN, () -> modeManager.isActive (Modes.INSTRUMENT_DEVICE_PARAMS));
 
                 this.addButton (surface, ButtonID.MOVE_TRACK_LEFT, "Left", new MCUMoveTrackBankCommand (this.model, surface, true, true), 0, MCUControlSurface.MCU_TRACK_LEFT);
                 this.addButton (surface, ButtonID.MOVE_TRACK_RIGHT, TAG_RIGHT, new MCUMoveTrackBankCommand (this.model, surface, true, false), 0, MCUControlSurface.MCU_TRACK_RIGHT);
 
                 // Automation
-                this.addButton (surface, ButtonID.AUTOMATION_TRIM, "Trim", new AutomationModeCommand<> (AutomationMode.TRIM_READ, this.model, surface), 0, MCUControlSurface.MCU_TRIM, () -> t.getAutomationWriteMode () == AutomationMode.TRIM_READ);
-                this.addButton (surface, ButtonID.AUTOMATION_READ, "Read", new AutomationModeCommand<> (AutomationMode.READ, this.model, surface), 0, MCUControlSurface.MCU_READ, () -> t.getAutomationWriteMode () == AutomationMode.READ);
-                this.addButton (surface, ButtonID.AUTOMATION_WRITE, "Write", new AutomationModeCommand<> (AutomationMode.WRITE, this.model, surface), 0, MCUControlSurface.MCU_WRITE, () -> t.getAutomationWriteMode () == AutomationMode.WRITE);
-                this.addButton (surface, ButtonID.AUTOMATION_GROUP, "Group/Write", new AutomationModeCommand<> (AutomationMode.LATCH_PREVIEW, this.model, surface), 0, MCUControlSurface.MCU_GROUP, () -> t.getAutomationWriteMode () == AutomationMode.LATCH_PREVIEW);
-                this.addButton (surface, ButtonID.AUTOMATION_TOUCH, "Touch", new AutomationModeCommand<> (AutomationMode.TOUCH, this.model, surface), 0, MCUControlSurface.MCU_TOUCH, () -> t.getAutomationWriteMode () == AutomationMode.TOUCH);
-                this.addButton (surface, ButtonID.AUTOMATION_LATCH, "Latch", new AutomationModeCommand<> (AutomationMode.LATCH, this.model, surface), 0, MCUControlSurface.MCU_LATCH, () -> t.getAutomationWriteMode () == AutomationMode.LATCH);
+                this.addButton (surface, ButtonID.AUTOMATION_TRIM, "Trim", new AutomationModeCommand<> (AutomationMode.TRIM_READ, this.model, surface, false), 0, MCUControlSurface.MCU_TRIM, () -> t.getAutomationWriteMode () == AutomationMode.TRIM_READ);
+                this.addButton (surface, ButtonID.AUTOMATION_READ, "Read", new AutomationModeCommand<> (AutomationMode.READ, this.model, surface, false), 0, MCUControlSurface.MCU_READ, () -> t.getAutomationWriteMode () == AutomationMode.READ);
+                this.addButton (surface, ButtonID.AUTOMATION_WRITE, "Write", new AutomationModeCommand<> (AutomationMode.WRITE, this.model, surface, false), 0, MCUControlSurface.MCU_WRITE, () -> t.getAutomationWriteMode () == AutomationMode.WRITE);
+                this.addButton (surface, ButtonID.AUTOMATION_GROUP, "Group/Write", new AutomationModeCommand<> (AutomationMode.LATCH_PREVIEW, this.model, surface, false), 0, MCUControlSurface.MCU_GROUP, () -> t.getAutomationWriteMode () == AutomationMode.LATCH_PREVIEW);
+                this.addButton (surface, ButtonID.AUTOMATION_TOUCH, "Touch", new AutomationModeCommand<> (AutomationMode.TOUCH, this.model, surface, false), 0, MCUControlSurface.MCU_TOUCH, () -> t.getAutomationWriteMode () == AutomationMode.TOUCH);
+                this.addButton (surface, ButtonID.AUTOMATION_LATCH, "Latch", new AutomationModeCommand<> (AutomationMode.LATCH, this.model, surface, false), 0, MCUControlSurface.MCU_LATCH, () -> t.getAutomationWriteMode () == AutomationMode.LATCH);
                 this.addButton (surface, ButtonID.UNDO, "Undo", new UndoCommand<> (this.model, surface), MCUControlSurface.MCU_UNDO);
 
                 // Panes
@@ -512,7 +538,7 @@ public class MCUControllerSetup extends AbstractControllerSetup<MCUControlSurfac
                 // Only MCU
                 this.addButton (surface, ButtonID.SAVE, "Save", new SaveCommand<> (this.model, surface), 0, MCUControlSurface.MCU_SAVE, () -> this.model.getProject ().isDirty ());
                 this.addButton (surface, ButtonID.MARKER, "Marker", new MarkerCommand<> (this.model, surface), 0, MCUControlSurface.MCU_MARKER, () -> surface.getButton (ButtonID.SHIFT).isPressed () ? this.model.getArranger ().areCueMarkersVisible () : modeManager.isActive (Modes.MARKERS));
-                this.addButton (surface, ButtonID.TOGGLE_VU, "Toggle VU", new ToggleVUCommand<> (this.model, surface), 0, MCUControlSurface.MCU_EDIT, () -> this.configuration.isEnableVUMeters ());
+                // MCUControlSurface.MCU_EDIT - was used to toggle VU
 
                 this.addLight (surface, OutputID.LED1, 0, MCUControlSurface.MCU_SMPTE_LED, () -> this.configuration.isDisplayTicks () ? 2 : 0);
                 this.addLight (surface, OutputID.LED2, 0, MCUControlSurface.MCU_BEATS_LED, () -> !this.configuration.isDisplayTicks () ? 2 : 0);
@@ -680,7 +706,8 @@ public class MCUControllerSetup extends AbstractControllerSetup<MCUControlSurfac
                 surface.getButton (ButtonID.NEW).setBounds (392.0, 942.0, 77.75, 39.75);
                 surface.getButton (ButtonID.SAVE).setBounds (921.5, 320.25, 65.0, 39.75);
                 surface.getButton (ButtonID.MARKER).setBounds (632.5, 225.25, 65.0, 39.75);
-                surface.getButton (ButtonID.TOGGLE_VU).setBounds (790.25, 92.5, 77.75, 39.75);
+                // Currently not used:
+                // surface.getButton (ButtonID.TOGGLE_VU).setBounds (790.25, 92.5, 77.75, 39.75);
 
                 surface.getContinuous (ContinuousID.PLAY_POSITION).setBounds (859.5, 806.5, 115.25, 115.75);
                 surface.getContinuous (ContinuousID.FADER_MASTER).setBounds (613.5, 501.5, 65.0, 419.0);
@@ -811,8 +838,10 @@ public class MCUControllerSetup extends AbstractControllerSetup<MCUControlSurfac
         else
             currentChannelBank = this.model.getCurrentTrackBank ();
 
-        final boolean shouldPinFXTracksToLastController = this.configuration.shouldPinFXTracksToLastController ();
+        final VUMeterStyle vuMeterStyle = this.configuration.getVuMeterStyle ();
 
+        final boolean shouldPinFXTracksToLastController = this.configuration.shouldPinFXTracksToLastController ();
+        final boolean alwaysSendVuMeters = this.configuration.alwaysSendVuMeters ();
         for (int index = 0; index < this.numMCUDevices; index++)
         {
             final MCUControlSurface surface = this.getSurface (index);
@@ -826,41 +855,76 @@ public class MCUControllerSetup extends AbstractControllerSetup<MCUControlSurfac
                 final int channel = extenderOffset + i;
                 final IChannel track = channelBank.getItem (channel);
 
-                final int vu = track.getVu ();
-                if (vu != this.vuValues[channel])
+                if (vuMeterStyle == VUMeterStyle.ASPARION)
                 {
-                    this.vuValues[channel] = vu;
-                    this.sendVUValue (output, i, vu, false);
+                    final int vuLeft = track.getVuLeft ();
+                    final int scaledVuLeft = this.scaleVU (vuLeft);
+                    if (this.vuValues[channel] != scaledVuLeft || alwaysSendVuMeters)
+                    {
+                        this.vuValues[channel] = scaledVuLeft;
+                        this.sendVUValue (output, i, vuLeft, scaledVuLeft, false);
+                    }
+                    final int vuRight = track.getVuRight ();
+                    final int scaledVuRight = this.scaleVU (vuRight);
+                    if (this.vuValuesRight[channel] != scaledVuRight || alwaysSendVuMeters)
+                    {
+                        this.vuValuesRight[channel] = scaledVuRight;
+                        this.sendVUValue (output, i, vuRight, scaledVuRight, true);
+                    }
+                }
+                else
+                {
+                    final int vu = track.getVu ();
+                    final int scaledVu = this.scaleVU (vu);
+                    if (this.vuValues[channel] != scaledVu || alwaysSendVuMeters)
+                    {
+                        this.vuValues[channel] = scaledVu;
+                        this.sendVUValue (output, i, vu, scaledVu, false);
+                    }
                 }
             }
 
-            // Stereo VU of master channel
-            if (this.configuration.getDeviceType (index) == MCUDeviceType.MAIN && this.configuration.hasMasterVU ())
+            // Stereo VUs of master channel
+            if (vuMeterStyle == VUMeterStyle.ICON && this.configuration.getDeviceType (index) == MCUDeviceType.MAIN)
             {
                 final IMasterTrack masterTrack = this.model.getMasterTrack ();
 
                 int vu = masterTrack.getVuLeft ();
-                if (vu != this.masterVuValues[0])
+                int scaledVu = this.scaleVU (vu);
+                if (this.masterVuValues[0] != scaledVu)
                 {
-                    this.masterVuValues[0] = vu;
-                    this.sendVUValue (output, 0, vu, true);
+                    this.masterVuValues[0] = scaledVu;
+                    this.sendVUValue (output, 0, vu, scaledVu, true);
                 }
 
                 vu = masterTrack.getVuRight ();
-                if (vu != this.masterVuValues[1])
+                scaledVu = this.scaleVU (vu);
+                if (this.masterVuValues[1] != scaledVu)
                 {
-                    this.masterVuValues[1] = vu;
-                    this.sendVUValue (output, 1, vu, true);
+                    this.masterVuValues[1] = scaledVu;
+                    this.sendVUValue (output, 1, vu, scaledVu, true);
                 }
             }
         }
     }
 
 
-    private void sendVUValue (final IMidiOutput output, final int track, final int vu, final boolean isMaster)
+    private int scaleVU (final int vu)
     {
-        final int scaledValue = (int) Math.round (this.valueChanger.toNormalizedValue (vu) * 13);
-        output.sendChannelAftertouch (isMaster ? 1 : 0, 0x10 * track + scaledValue, 0);
+        return (int) Math.round (this.valueChanger.toNormalizedValue (vu) * 13);
+    }
+
+
+    private void sendVUValue (final IMidiOutput output, final int track, final int vu, final int scaledVu, final boolean isMasterOrRightChannel)
+    {
+        output.sendChannelAftertouch (isMasterOrRightChannel ? 1 : 0, 0x10 * track + scaledVu, 0);
+
+        // iCON devices do not support the clip state and Asparion ignores it!
+        if (this.configuration.getVuMeterStyle () == VUMeterStyle.MACKIE)
+        {
+            final boolean doesClip = vu > 16240;
+            output.sendChannelAftertouch (isMasterOrRightChannel ? 1 : 0, 0x10 * track + (doesClip ? 0x0E : 0x0F), 0);
+        }
     }
 
 

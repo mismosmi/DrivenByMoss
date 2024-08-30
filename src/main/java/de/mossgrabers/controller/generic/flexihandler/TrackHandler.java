@@ -1,8 +1,10 @@
 // Written by Jürgen Moßgraber - mossgrabers.de
-// (c) 2017-2023
+// (c) 2017-2024
 // Licensed under LGPLv3 - http://www.gnu.org/licenses/lgpl-3.0.txt
 
 package de.mossgrabers.controller.generic.flexihandler;
+
+import java.util.Optional;
 
 import de.mossgrabers.controller.generic.GenericFlexiConfiguration;
 import de.mossgrabers.controller.generic.controller.FlexiCommand;
@@ -23,8 +25,6 @@ import de.mossgrabers.framework.daw.data.bank.ITrackBank;
 import de.mossgrabers.framework.daw.resource.ChannelType;
 import de.mossgrabers.framework.parameter.IParameter;
 import de.mossgrabers.framework.utils.ButtonEvent;
-
-import java.util.Optional;
 
 
 /**
@@ -72,6 +72,8 @@ public class TrackHandler extends AbstractHandler
             FlexiCommand.TRACK_SELECT_NEXT_BANK_PAGE,
             FlexiCommand.TRACK_SELECT_PREVIOUS_TRACK,
             FlexiCommand.TRACK_SELECT_NEXT_TRACK,
+            FlexiCommand.TRACK_SCROLL_BANK_PAGE_BY_1_LEFT,
+            FlexiCommand.TRACK_SCROLL_BANK_PAGE_BY_1_RIGHT,
             FlexiCommand.TRACK_SCROLL_TRACKS,
             FlexiCommand.TRACK_1_SELECT,
             FlexiCommand.TRACK_2_SELECT,
@@ -297,6 +299,16 @@ public class TrackHandler extends AbstractHandler
 
         switch (command)
         {
+            case TRACK_SELECT_PREVIOUS_BANK_PAGE:
+                return toMidiValue (trackBank.canScrollPageBackwards ());
+            case TRACK_SELECT_NEXT_BANK_PAGE:
+                return toMidiValue (trackBank.canScrollPageForwards ());
+
+            case TRACK_SELECT_PREVIOUS_TRACK, TRACK_SCROLL_BANK_PAGE_BY_1_LEFT:
+                return toMidiValue (trackBank.canScrollBackwards ());
+            case TRACK_SELECT_NEXT_TRACK, TRACK_SCROLL_BANK_PAGE_BY_1_RIGHT:
+                return toMidiValue (trackBank.canScrollForwards ());
+
             case TRACK_1_SELECT, TRACK_2_SELECT, TRACK_3_SELECT, TRACK_4_SELECT, TRACK_5_SELECT, TRACK_6_SELECT, TRACK_7_SELECT, TRACK_8_SELECT:
                 return toMidiValue (trackBank.getItem (command.ordinal () - FlexiCommand.TRACK_1_SELECT.ordinal ()).isSelected ());
 
@@ -436,6 +448,16 @@ public class TrackHandler extends AbstractHandler
             case TRACK_SELECT_NEXT_TRACK:
                 if (isButtonPressed)
                     this.clipLauncherNavigator.navigateTracks (false);
+                break;
+
+            case TRACK_SCROLL_BANK_PAGE_BY_1_LEFT:
+                if (isButtonPressed)
+                    trackBank.scrollBackwards ();
+                break;
+
+            case TRACK_SCROLL_BANK_PAGE_BY_1_RIGHT:
+                if (isButtonPressed)
+                    trackBank.scrollForwards ();
                 break;
 
             case TRACK_SCROLL_TRACKS:
@@ -729,7 +751,7 @@ public class TrackHandler extends AbstractHandler
 
     private void scrollTrack (final KnobMode knobMode, final MidiValue value)
     {
-        if (!isAbsolute (knobMode) && this.increaseKnobMovement ())
+        if (!isAbsolute (knobMode))
             this.clipLauncherNavigator.navigateTracks (!this.isIncrease (knobMode, value));
     }
 }

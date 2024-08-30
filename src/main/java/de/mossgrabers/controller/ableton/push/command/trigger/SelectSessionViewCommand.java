@@ -1,5 +1,5 @@
 // Written by Jürgen Moßgraber - mossgrabers.de
-// (c) 2017-2023
+// (c) 2017-2024
 // Licensed under LGPLv3 - http://www.gnu.org/licenses/lgpl-3.0.txt
 
 package de.mossgrabers.controller.ableton.push.command.trigger;
@@ -50,11 +50,13 @@ public class SelectSessionViewCommand extends AbstractTriggerCommand<PushControl
     @Override
     public void execute (final ButtonEvent event, final int velocity)
     {
+        final ViewManager viewManager = this.surface.getViewManager ();
+
         if (event == ButtonEvent.DOWN)
         {
             this.isTemporary = false;
 
-            final ViewManager viewManager = this.surface.getViewManager ();
+            // Switch to the preferred session view
             final ModeManager modeManager = this.surface.getModeManager ();
             if (Views.isSessionView (viewManager.getActiveID ()))
             {
@@ -65,25 +67,12 @@ public class SelectSessionViewCommand extends AbstractTriggerCommand<PushControl
                 return;
             }
 
-            // Switch to the preferred session view and display scene/clip mode if enabled
             final PushConfiguration configuration = this.surface.getConfiguration ();
             viewManager.setActive (configuration.isScenesClipViewSelected () ? Views.SCENE_PLAY : Views.SESSION);
-            switch (configuration.getSessionDisplayContent ())
-            {
-                case SCENES_CLIPS:
-                    modeManager.setActive (Modes.SESSION);
-                    break;
-                case MARKERS:
-                    modeManager.setActive (Modes.MARKERS);
-                    break;
-                default:
-                    // Stay in mixer mode
-                    break;
-            }
             return;
         }
 
         if (event == ButtonEvent.UP && this.isTemporary)
-            this.surface.getViewManager ().restore ();
+            viewManager.restore ();
     }
 }

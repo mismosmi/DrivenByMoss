@@ -1,8 +1,10 @@
 // Written by Jürgen Moßgraber - mossgrabers.de
-// (c) 2017-2023
+// (c) 2017-2024
 // Licensed under LGPLv3 - http://www.gnu.org/licenses/lgpl-3.0.txt
 
 package de.mossgrabers.controller.akai.fire.controller;
+
+import java.util.Arrays;
 
 import de.mossgrabers.framework.controller.display.AbstractGraphicDisplay;
 import de.mossgrabers.framework.daw.IHost;
@@ -10,8 +12,6 @@ import de.mossgrabers.framework.daw.midi.IMidiOutput;
 import de.mossgrabers.framework.graphics.ChromaticGraphicsConfiguration;
 import de.mossgrabers.framework.graphics.DefaultGraphicsDimensions;
 import de.mossgrabers.framework.graphics.IBitmap;
-
-import java.util.Arrays;
 
 
 /**
@@ -48,7 +48,7 @@ public class FireDisplay extends AbstractGraphicDisplay
 
     /**
      * Constructor. The display is divided into eight bands of 8×128 pixels. Each band in this
-     * arrangement is written in a block of 8×7 pixels
+     * arrangement is written in a block of 8×7 pixels.
      *
      * @param host The host
      * @param output The MIDI output which addresses the display

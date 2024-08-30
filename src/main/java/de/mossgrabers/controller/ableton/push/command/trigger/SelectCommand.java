@@ -1,5 +1,5 @@
 // Written by Jürgen Moßgraber - mossgrabers.de
-// (c) 2017-2023
+// (c) 2017-2024
 // Licensed under LGPLv3 - http://www.gnu.org/licenses/lgpl-3.0.txt
 
 package de.mossgrabers.controller.ableton.push.command.trigger;
@@ -45,18 +45,12 @@ public class SelectCommand extends AbstractTriggerCommand<PushControlSurface, Pu
         if (modeManager.isActive (Modes.BROWSER))
             return;
 
-        if (event == ButtonEvent.DOWN)
+        if (event == ButtonEvent.UP)
         {
-            if (!this.surface.isShiftPressed ())
-            {
-                // Track or layer details?
-                if (Modes.isLayerMode (modeManager.getActiveID ()))
-                    modeManager.setTemporary (Modes.DEVICE_LAYER_DETAILS);
-                else
-                    modeManager.setTemporary (Modes.TRACK_DETAILS);
-            }
+            if (modeManager.isActive (Modes.TRACK_DETAILS, Modes.DEVICE_LAYER_DETAILS))
+                modeManager.restore ();
+            else
+                modeManager.setTemporary (Modes.isLayerMode (modeManager.getActiveID ()) ? Modes.DEVICE_LAYER_DETAILS : Modes.TRACK_DETAILS);
         }
-        else if (event == ButtonEvent.UP && modeManager.isActive (Modes.TRACK_DETAILS, Modes.DEVICE_LAYER_DETAILS))
-            modeManager.restore ();
     }
 }

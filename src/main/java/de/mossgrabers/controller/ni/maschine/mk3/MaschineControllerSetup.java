@@ -1,8 +1,15 @@
 // Written by Jürgen Moßgraber - mossgrabers.de
-// (c) 2017-2023
+// (c) 2017-2024
 // Licensed under LGPLv3 - http://www.gnu.org/licenses/lgpl-3.0.txt
 
 package de.mossgrabers.controller.ni.maschine.mk3;
+
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+import java.util.function.BooleanSupplier;
 
 import de.mossgrabers.controller.mackie.mcu.controller.MCUDisplay;
 import de.mossgrabers.controller.ni.maschine.Maschine;
@@ -108,13 +115,6 @@ import de.mossgrabers.framework.utils.FrameworkException;
 import de.mossgrabers.framework.utils.OperatingSystem;
 import de.mossgrabers.framework.view.Views;
 
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
-import java.util.function.BooleanSupplier;
-
 
 /**
  * Support for the NI Maschine controller series.
@@ -218,7 +218,7 @@ public class MaschineControllerSetup extends AbstractControllerSetup<MaschineCon
 
         if (this.maschine.hasMCUDisplay ())
         {
-            final MCUDisplay display = new MCUDisplay (this.host, output, true, false, false);
+            final MCUDisplay display = new MCUDisplay (this.host, output, true, false, false, this.configuration);
             display.setCenterNotification (false);
             surface.addTextDisplay (display);
         }
@@ -1131,7 +1131,7 @@ public class MaschineControllerSetup extends AbstractControllerSetup<MaschineCon
     {
         final MaschineControlSurface surface = this.getSurface ();
         surface.getModeManager ().setActive (Modes.VOLUME);
-        surface.getViewManager ().setActive (Views.PLAY);
+        surface.getViewManager ().setActive (this.configuration.getStartupView ());
     }
 
 

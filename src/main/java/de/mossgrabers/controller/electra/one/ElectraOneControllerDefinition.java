@@ -1,15 +1,15 @@
 // Written by Jürgen Moßgraber - mossgrabers.de
-// (c) 2017-2023
+// (c) 2017-2024
 // Licensed under LGPLv3 - http://www.gnu.org/licenses/lgpl-3.0.txt
 
 package de.mossgrabers.controller.electra.one;
 
+import java.util.List;
+import java.util.UUID;
+
 import de.mossgrabers.framework.controller.DefaultControllerDefinition;
 import de.mossgrabers.framework.utils.OperatingSystem;
 import de.mossgrabers.framework.utils.Pair;
-
-import java.util.List;
-import java.util.UUID;
 
 
 /**
@@ -65,7 +65,7 @@ public class ElectraOneControllerDefinition extends DefaultControllerDefinition
                 }
                 break;
 
-            case MAC:
+            case MAC, MAC_ARM:
                 final String [] portNamesMac = new String []
                 {
                     "Electra Controller Electra Port 1",

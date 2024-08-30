@@ -1,5 +1,5 @@
 // Written by Jürgen Moßgraber - mossgrabers.de
-// (c) 2017-2023
+// (c) 2017-2024
 // Licensed under LGPLv3 - http://www.gnu.org/licenses/lgpl-3.0.txt
 
 package de.mossgrabers.framework.controller.display;
@@ -19,7 +19,15 @@ public interface ITextDisplay extends IDisplay
      *
      * @return The number of lines (rows)
      */
-    int getNoOfLines ();
+    int getNumberOfLines ();
+
+
+    /**
+     * Get the number of characters of cell.
+     *
+     * @return The number of characters
+     */
+    int getNumberOfCellCharacters ();
 
 
     /**

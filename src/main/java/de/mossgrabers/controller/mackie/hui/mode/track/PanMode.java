@@ -1,15 +1,15 @@
 // Written by Jürgen Moßgraber - mossgrabers.de
-// (c) 2017-2023
+// (c) 2017-2024
 // Licensed under LGPLv3 - http://www.gnu.org/licenses/lgpl-3.0.txt
 
 package de.mossgrabers.controller.mackie.hui.mode.track;
+
+import java.util.Optional;
 
 import de.mossgrabers.controller.mackie.hui.controller.HUIControlSurface;
 import de.mossgrabers.framework.daw.IModel;
 import de.mossgrabers.framework.daw.data.ITrack;
 import de.mossgrabers.framework.mode.Modes;
-
-import java.util.Optional;
 
 
 /**
@@ -68,7 +68,7 @@ public class PanMode extends AbstractTrackMode
 
     /** {@inheritDoc} */
     @Override
-    protected void resetParameter (final int index)
+    public void resetParameter (final int index)
     {
         final Optional<ITrack> track = this.getTrack (index);
         if (track.isPresent ())

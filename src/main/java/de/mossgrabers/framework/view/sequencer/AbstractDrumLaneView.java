@@ -1,8 +1,11 @@
 // Written by Jürgen Moßgraber - mossgrabers.de
-// (c) 2017-2023
+// (c) 2017-2024
 // Licensed under LGPLv3 - http://www.gnu.org/licenses/lgpl-3.0.txt
 
 package de.mossgrabers.framework.view.sequencer;
+
+import java.util.List;
+import java.util.Optional;
 
 import de.mossgrabers.framework.configuration.Configuration;
 import de.mossgrabers.framework.controller.ButtonID;
@@ -18,9 +21,6 @@ import de.mossgrabers.framework.daw.clip.StepState;
 import de.mossgrabers.framework.daw.constants.Resolution;
 import de.mossgrabers.framework.daw.data.IDrumDevice;
 import de.mossgrabers.framework.utils.ButtonEvent;
-
-import java.util.List;
-import java.util.Optional;
 
 
 /**
@@ -87,19 +87,20 @@ public abstract class AbstractDrumLaneView<S extends IControlSurface<C>, C exten
         if (!this.isActive ())
             return;
 
-        final int index = note - DRUM_START_KEY;
+        final int index = note - this.surface.getPadGrid ().getStartNote ();
         final int x = index % this.numColumns;
         final int y = index / this.numColumns;
         final int sound = y % this.lanes + this.scales.getDrumOffset ();
-        final int laneOffset = (this.allRows - 1 - y) / this.lanes * this.numColumns;
         final int vel = this.configuration.isAccentActive () ? this.configuration.getFixedAccentValue () : this.surface.getButton (ButtonID.get (ButtonID.PAD1, index)).getPressedVelocity ();
+        final int step = (this.allRows - 1 - y) / this.lanes * this.numColumns + x;
+        final NotePosition notePosition = new NotePosition (this.configuration.getMidiEditChannel (), step, sound);
 
-        final NotePosition notePosition = new NotePosition (this.configuration.getMidiEditChannel (), laneOffset + x, sound);
-
-        if (this.handleSequencerAreaButtonCombinations (this.getClip (), notePosition, y, velocity, vel))
+        final INoteClip clip = this.getClip ();
+        if (this.handleSequencerAreaButtonCombinations (clip, notePosition, y, velocity, vel) || this.handleNoteEditor (clip, notePosition, velocity))
             return;
 
         this.handleSequencerArea (velocity, vel, notePosition);
+
     }
 
 
@@ -112,10 +113,8 @@ public abstract class AbstractDrumLaneView<S extends IControlSurface<C>, C exten
      */
     protected void handleSequencerArea (final int velocity, final int downVelocity, final NotePosition notePosition)
     {
-        if (velocity != 0)
-            return;
-
-        this.getClip ().toggleStep (notePosition, downVelocity);
+        if (velocity == 0)
+            this.getClip ().toggleStep (notePosition, downVelocity);
     }
 
 

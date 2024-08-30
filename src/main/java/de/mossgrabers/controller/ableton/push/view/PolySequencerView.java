@@ -1,5 +1,5 @@
 // Written by Jürgen Moßgraber - mossgrabers.de
-// (c) 2017-2023
+// (c) 2017-2024
 // Licensed under LGPLv3 - http://www.gnu.org/licenses/lgpl-3.0.txt
 
 package de.mossgrabers.controller.ableton.push.view;
@@ -15,7 +15,7 @@ import de.mossgrabers.framework.view.sequencer.AbstractPolySequencerView;
 
 
 /**
- * The Poly Sequencer view.
+ * The Poly-Sequencer view.
  *
  * @author Jürgen Moßgraber
  */
@@ -86,6 +86,7 @@ public class PolySequencerView extends AbstractPolySequencerView<PushControlSurf
         // Add note to edit notes with SELECT
         if (isSelectPressed)
         {
+            this.surface.setTriggerConsumed (ButtonID.SELECT);
             for (int row = 0; row < 128; row++)
             {
                 notePosition.setNote (row);

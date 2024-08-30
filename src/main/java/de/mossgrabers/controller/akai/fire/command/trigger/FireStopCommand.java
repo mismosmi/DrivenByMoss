@@ -1,5 +1,5 @@
 // Written by Jürgen Moßgraber - mossgrabers.de
-// (c) 2017-2023
+// (c) 2017-2024
 // Licensed under LGPLv3 - http://www.gnu.org/licenses/lgpl-3.0.txt
 
 package de.mossgrabers.controller.akai.fire.command.trigger;
@@ -46,8 +46,11 @@ public class FireStopCommand extends StopCommand<FireControlSurface, FireConfigu
     @Override
     public void executeShifted (final ButtonEvent event)
     {
-        if (event == ButtonEvent.UP)
-            this.model.getTransport ().toggleWriteClipLauncherAutomation ();
+        if (event != ButtonEvent.UP)
+            return;
+
+        this.transport.toggleWriteClipLauncherAutomation ();
+        this.mvHelper.notifyClipLauncherAutomation ();
     }
 
 
@@ -58,7 +61,10 @@ public class FireStopCommand extends StopCommand<FireControlSurface, FireConfigu
      */
     public void executeAlt (final ButtonEvent event)
     {
-        if (event == ButtonEvent.UP)
-            this.model.getTransport ().toggleWriteArrangerAutomation ();
+        if (event != ButtonEvent.UP)
+            return;
+
+        this.transport.toggleWriteArrangerAutomation ();
+        this.mvHelper.notifyArrangerAutomation ();
     }
 }

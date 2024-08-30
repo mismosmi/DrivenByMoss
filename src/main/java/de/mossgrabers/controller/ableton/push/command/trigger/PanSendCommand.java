@@ -1,5 +1,5 @@
 // Written by Jürgen Moßgraber - mossgrabers.de
-// (c) 2017-2023
+// (c) 2017-2024
 // Licensed under LGPLv3 - http://www.gnu.org/licenses/lgpl-3.0.txt
 
 package de.mossgrabers.controller.ableton.push.command.trigger;
@@ -7,6 +7,7 @@ package de.mossgrabers.controller.ableton.push.command.trigger;
 import de.mossgrabers.controller.ableton.push.PushConfiguration;
 import de.mossgrabers.controller.ableton.push.controller.PushControlSurface;
 import de.mossgrabers.framework.command.core.AbstractTriggerCommand;
+import de.mossgrabers.framework.controller.ButtonID;
 import de.mossgrabers.framework.daw.IModel;
 import de.mossgrabers.framework.daw.data.bank.ITrackBank;
 import de.mossgrabers.framework.featuregroup.ModeManager;
@@ -48,6 +49,7 @@ public class PanSendCommand extends AbstractTriggerCommand<PushControlSurface, P
         final PushConfiguration config = this.surface.getConfiguration ();
         if (!config.isPushModern () && this.surface.isSelectPressed () && Modes.isLayerMode (currentMode))
         {
+            this.surface.setTriggerConsumed (ButtonID.SELECT);
             mode = Modes.get (currentMode, 1);
             // Wrap
             if (mode.ordinal () < Modes.DEVICE_LAYER_PAN.ordinal () || mode.ordinal () > Modes.DEVICE_LAYER_SEND8.ordinal ())

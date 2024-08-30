@@ -1,5 +1,5 @@
 // Written by Jürgen Moßgraber - mossgrabers.de
-// (c) 2017-2023
+// (c) 2017-2024
 // Licensed under LGPLv3 - http://www.gnu.org/licenses/lgpl-3.0.txt
 
 package de.mossgrabers.controller.akai.fire.view;
@@ -19,7 +19,7 @@ import de.mossgrabers.framework.utils.ButtonEvent;
 
 
 /**
- * A view for mixing with track select, mute, solo, rec arm, stop clip, volume and panorama.
+ * A view for mixing with track select, mute, solo, record arm, stop clip, volume and panorama.
  *
  * @author Jürgen Moßgraber
  */
@@ -101,7 +101,7 @@ public class MixView extends AbstractView<FireControlSurface, FireConfiguration>
                     track.duplicate ();
                 }
                 else
-                    track.select ();
+                    track.selectOrExpandGroup ();
                 break;
 
             case 2:

@@ -1,5 +1,5 @@
 // Written by Jürgen Moßgraber - mossgrabers.de
-// (c) 2017-2023
+// (c) 2017-2024
 // Licensed under LGPLv3 - http://www.gnu.org/licenses/lgpl-3.0.txt
 
 package de.mossgrabers.controller.arturia.beatstep.controller;
@@ -17,6 +17,9 @@ import de.mossgrabers.framework.utils.StringUtils;
  */
 public class BeatstepPadGrid extends PadGridImpl
 {
+    private final Object sysexLock = new Object ();
+
+
     /**
      * Constructor.
      *
@@ -54,16 +57,25 @@ public class BeatstepPadGrid extends PadGridImpl
     public void lightPad (final int note, final int color)
     {
         final int n = note - 36;
-        final int pad = n < this.cols ? BeatstepControlSurface.BEATSTEP_PAD_9 + n : BeatstepControlSurface.BEATSTEP_PAD_1 + n - this.cols;
+        final int pad = n < this.columns ? BeatstepControlSurface.BEATSTEP_PAD_9 + n : BeatstepControlSurface.BEATSTEP_PAD_1 + n - this.columns;
         final String data = BeatstepControlSurface.SYSEX_HEADER + StringUtils.toHexStr (new int []
         {
             pad,
             color
         }) + BeatstepControlSurface.SYSEX_END;
-        this.output.sendSysex (data);
-        try {
-            Thread.sleep(1);
-        } catch (InterruptedException e) {
+
+        synchronized (this.sysexLock)
+        {
+            this.output.sendSysex (data);
+            // Brute force to slow down sending of sysex a bit...
+            try
+            {
+                Thread.sleep (1);
+            }
+            catch (final InterruptedException ex)
+            {
+                // Ignore
+            }
         }
     }
 

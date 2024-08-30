@@ -1,5 +1,5 @@
 // Written by Jürgen Moßgraber - mossgrabers.de
-// (c) 2017-2023
+// (c) 2017-2024
 // Licensed under LGPLv3 - http://www.gnu.org/licenses/lgpl-3.0.txt
 
 package de.mossgrabers.controller.ni.maschine.mk3.view;
@@ -30,7 +30,8 @@ import de.mossgrabers.framework.daw.midi.IMidiInput;
 import de.mossgrabers.framework.daw.midi.MidiConstants;
 import de.mossgrabers.framework.featuregroup.IMode;
 import de.mossgrabers.framework.featuregroup.ModeManager;
-import de.mossgrabers.framework.mode.INoteMode;
+import de.mossgrabers.framework.mode.INoteEditor;
+import de.mossgrabers.framework.mode.INoteEditorMode;
 import de.mossgrabers.framework.mode.Modes;
 import de.mossgrabers.framework.scale.Scales;
 import de.mossgrabers.framework.utils.ButtonEvent;
@@ -343,7 +344,7 @@ public class PlayView extends AbstractPlayView<MaschineControlSurface, MaschineC
         {
             case 0:
                 this.scales.toggleChromatic ();
-                this.surface.getDisplay ().notify ("Chromatic: " + (this.scales.isChromatic () ? "On" : "Off"));
+                display.notify ("Chromatic: " + (this.scales.isChromatic () ? "On" : "Off"));
                 this.configuration.setScaleInKey (!this.scales.isChromatic ());
                 break;
 
@@ -492,9 +493,7 @@ public class PlayView extends AbstractPlayView<MaschineControlSurface, MaschineC
     private void update ()
     {
         this.updateNoteMapping ();
-        this.configuration.setScale (this.scales.getScale ().getName ());
-        this.configuration.setScaleBase (Scales.BASES.get (this.scales.getScaleOffsetIndex ()));
-        this.configuration.setScaleLayout (this.scales.getScaleLayout ().getName ());
+        this.scales.updateScaleProperties (this.configuration);
     }
 
 
@@ -502,8 +501,8 @@ public class PlayView extends AbstractPlayView<MaschineControlSurface, MaschineC
     {
         final ModeManager modeManager = this.surface.getModeManager ();
         final IMode mode = modeManager.get (Modes.NOTE);
-        if (mode instanceof final INoteMode noteMode)
-            return noteMode.getNotes ();
+        if (mode instanceof final INoteEditorMode noteMode)
+            return noteMode.getNoteEditor ().getNotes ();
         return Collections.emptyList ();
     }
 
@@ -535,12 +534,13 @@ public class PlayView extends AbstractPlayView<MaschineControlSurface, MaschineC
 
         final ModeManager modeManager = this.surface.getModeManager ();
         final IMode mode = modeManager.get (Modes.NOTE);
-        if (mode instanceof final INoteMode noteMode)
+        if (mode instanceof final INoteEditorMode noteMode)
         {
+            final INoteEditor noteEditor = noteMode.getNoteEditor ();
             if (addNote)
-                noteMode.addNote (clip, notePosition);
+                noteEditor.addNote (clip, notePosition);
             else
-                noteMode.setNote (clip, notePosition);
+                noteEditor.setNote (clip, notePosition);
             modeManager.setActive (Modes.NOTE);
         }
     }

@@ -1,10 +1,9 @@
 // Written by Jürgen Moßgraber - mossgrabers.de
-// (c) 2017-2023
+// (c) 2017-2024
 // Licensed under LGPLv3 - http://www.gnu.org/licenses/lgpl-3.0.txt
 
 package de.mossgrabers.controller.ableton.push.mode;
 
-import de.mossgrabers.controller.ableton.push.PushConfiguration;
 import de.mossgrabers.controller.ableton.push.controller.Push1Display;
 import de.mossgrabers.controller.ableton.push.controller.PushColorManager;
 import de.mossgrabers.controller.ableton.push.controller.PushControlSurface;
@@ -168,9 +167,6 @@ public class ScalesMode extends BaseMode<IItem>
     private void update ()
     {
         this.surface.getViewManager ().getActive ().updateNoteMapping ();
-        final PushConfiguration config = this.surface.getConfiguration ();
-        config.setScale (this.scales.getScale ().getName ());
-        config.setScaleBase (Scales.BASES.get (this.scales.getScaleOffsetIndex ()));
-        config.setScaleInKey (!this.scales.isChromatic ());
+        this.scales.updateScaleProperties (this.surface.getConfiguration ());
     }
 }

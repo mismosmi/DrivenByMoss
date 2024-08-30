@@ -1,5 +1,5 @@
 // Written by Jürgen Moßgraber - mossgrabers.de
-// (c) 2017-2023
+// (c) 2017-2024
 // Licensed under LGPLv3 - http://www.gnu.org/licenses/lgpl-3.0.txt
 
 package de.mossgrabers.framework.command.trigger.view;
@@ -29,9 +29,8 @@ import de.mossgrabers.framework.view.Views;
  */
 public class ToggleShiftViewCommand<S extends IControlSurface<C>, C extends Configuration> extends AbstractTriggerCommand<S, C>
 {
-    protected final ViewManager         viewManager;
-    protected final ISessionAlternative sessionAlternative;
-    protected final IView               shiftView;
+    protected final ViewManager viewManager;
+    protected final IView       shiftView;
 
 
     /**
@@ -45,7 +44,6 @@ public class ToggleShiftViewCommand<S extends IControlSurface<C>, C extends Conf
         super (model, surface);
 
         this.viewManager = this.surface.getViewManager ();
-        this.sessionAlternative = (ISessionAlternative) this.viewManager.get (Views.SESSION);
         this.shiftView = this.viewManager.get (Views.SHIFT);
     }
 
@@ -54,9 +52,13 @@ public class ToggleShiftViewCommand<S extends IControlSurface<C>, C extends Conf
     @Override
     public void execute (final ButtonEvent event, final int velocity)
     {
+        if (this.surface.isPressed (ButtonID.ALT))
+            return;
+
         switch (event)
         {
             case DOWN:
+                this.surface.setKnobSensitivityIsSlow (true);
                 this.handleOnDown ();
                 break;
 
@@ -65,11 +67,10 @@ public class ToggleShiftViewCommand<S extends IControlSurface<C>, C extends Conf
                 return;
 
             case UP:
+                this.surface.setKnobSensitivityIsSlow (false);
                 this.handleUp ();
                 break;
         }
-
-        this.surface.setKnobSensitivityIsSlow (this.surface.isShiftPressed ());
     }
 
 
@@ -79,6 +80,7 @@ public class ToggleShiftViewCommand<S extends IControlSurface<C>, C extends Conf
         {
             this.viewManager.restore ();
             this.surface.setTriggerConsumed (ButtonID.SHIFT);
+            this.surface.setKnobSensitivityIsSlow (false);
             return;
         }
 
@@ -114,7 +116,8 @@ public class ToggleShiftViewCommand<S extends IControlSurface<C>, C extends Conf
      */
     protected void clearAlternateInteractionUsed ()
     {
-        this.sessionAlternative.setAlternateInteractionUsed (false);
+        if (this.viewManager.getActive () instanceof final ISessionAlternative sessionAlternative)
+            sessionAlternative.setAlternateInteractionUsed (false);
     }
 
 
@@ -125,7 +128,7 @@ public class ToggleShiftViewCommand<S extends IControlSurface<C>, C extends Conf
      */
     protected boolean wasAlternateInteractionUsed ()
     {
-        return this.sessionAlternative.wasAlternateInteractionUsed ();
+        return this.viewManager.getActive () instanceof final ISessionAlternative sessionAlternative && sessionAlternative.wasAlternateInteractionUsed ();
     }
 
 

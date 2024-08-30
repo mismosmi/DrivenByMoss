@@ -1,8 +1,10 @@
 // Written by Jürgen Moßgraber - mossgrabers.de
-// (c) 2017-2023
+// (c) 2017-2024
 // Licensed under LGPLv3 - http://www.gnu.org/licenses/lgpl-3.0.txt
 
 package de.mossgrabers.controller.novation.launchpad;
+
+import java.util.List;
 
 import de.mossgrabers.controller.novation.launchpad.definition.ILaunchpadControllerDefinition;
 import de.mossgrabers.framework.configuration.AbstractConfiguration;
@@ -12,8 +14,6 @@ import de.mossgrabers.framework.controller.valuechanger.IValueChanger;
 import de.mossgrabers.framework.daw.IHost;
 import de.mossgrabers.framework.daw.midi.ArpeggiatorMode;
 import de.mossgrabers.framework.view.Views;
-
-import java.util.List;
 
 
 /**
@@ -91,8 +91,10 @@ public class LaunchpadConfiguration extends AbstractConfiguration
         this.activateAccentActiveSetting (globalSettings);
         this.activateAccentValueSetting (globalSettings);
         this.activateQuantizeAmountSetting (globalSettings);
-        this.activatePreferredNoteViewSetting (globalSettings, PREFERRED_NOTE_VIEWS);
+        this.activateStartupViewSetting (globalSettings, PREFERRED_NOTE_VIEWS);
         this.activateStartWithSessionViewSetting (globalSettings);
+        this.activateTurnOffScalePadsSetting (globalSettings);
+        this.activateShowPlayedChordsSetting (globalSettings);
 
         ///////////////////////////
         // Transport

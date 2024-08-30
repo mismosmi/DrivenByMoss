@@ -1,5 +1,5 @@
 // Written by Jürgen Moßgraber - mossgrabers.de
-// (c) 2017-2023
+// (c) 2017-2024
 // Licensed under LGPLv3 - http://www.gnu.org/licenses/lgpl-3.0.txt
 
 package de.mossgrabers.framework.view.sequencer;
@@ -157,6 +157,11 @@ public abstract class AbstractRaindropsView<S extends IControlSurface<C>, C exte
                     if (left <= distance && y == left || left > distance && y == sum - left)
                         colorID = AbstractSequencerView.COLOR_STEP_HILITE_NO_CONTENT;
                 }
+                else
+                {
+                    if (this.configuration.isTurnOffScalePads () && Scales.SCALE_COLOR_NOTE.equals (colorID))
+                        colorID = Scales.SCALE_COLOR_OFF;
+                }
                 padGrid.lightEx (x, this.numDisplayRows - 1 - y, colorID);
             }
         }
@@ -221,6 +226,14 @@ public abstract class AbstractRaindropsView<S extends IControlSurface<C>, C exte
         this.offsetY = Math.min (numRows - AbstractRaindropsView.NUM_OCTAVE, this.offsetY + AbstractRaindropsView.NUM_OCTAVE);
         this.updateScale ();
         this.surface.scheduleTask ( () -> this.surface.getDisplay ().notify (Scales.getSequencerRangeText (this.keyManager.map (0), this.keyManager.map (7))), 10);
+    }
+
+
+    /** {@inheritDoc} */
+    @Override
+    public void resetOctave ()
+    {
+        // Currently, not used
     }
 
 

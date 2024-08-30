@@ -1,5 +1,5 @@
 // Written by Jürgen Moßgraber - mossgrabers.de
-// (c) 2017-2023
+// (c) 2017-2024
 // Licensed under LGPLv3 - http://www.gnu.org/licenses/lgpl-3.0.txt
 
 package de.mossgrabers.controller.generic.flexihandler.utils;
@@ -33,6 +33,7 @@ public class CommandSlot
     private int             midiChannel           = 0;
     private boolean         isHighRes             = false;
     private KnobMode        knobMode              = KnobMode.ABSOLUTE;
+    private int             functionLayer         = 0;
     private boolean         sendValue             = false;
     private boolean         sendValueWhenReceived = false;
     private FlexiCommand    command               = FlexiCommand.OFF;
@@ -103,6 +104,17 @@ public class CommandSlot
 
 
     /**
+     * Get the function layer.
+     *
+     * @return The index of the layer, -1 index All Layers
+     */
+    public int getFunctionLayer ()
+    {
+        return this.functionLayer;
+    }
+
+
+    /**
      * Get the configured command.
      *
      * @return The command
@@ -165,6 +177,17 @@ public class CommandSlot
     public void setKnobMode (final KnobMode value)
     {
         this.knobMode = value;
+    }
+
+
+    /**
+     * Set the function layer.
+     *
+     * @param layerIndex The index of the layer
+     */
+    public void setFunctionLayer (final int layerIndex)
+    {
+        this.functionLayer = layerIndex;
     }
 
 

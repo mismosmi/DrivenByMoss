@@ -1,5 +1,5 @@
 // Written by Jürgen Moßgraber - mossgrabers.de
-// (c) 2017-2023
+// (c) 2017-2024
 // Licensed under LGPLv3 - http://www.gnu.org/licenses/lgpl-3.0.txt
 
 package de.mossgrabers.controller.ableton.push.view;
@@ -98,6 +98,7 @@ public class Drum4View extends AbstractDrum4View<PushControlSurface, PushConfigu
 
         if (isSelectPressed)
         {
+            this.surface.setTriggerConsumed (ButtonID.SELECT);
             if (velocity > 0)
                 this.editNote (clip, notePosition, true);
             return true;

@@ -1,11 +1,19 @@
 // Written by Jürgen Moßgraber - mossgrabers.de
-// (c) 2017-2023
+// (c) 2017-2024
 // Licensed under LGPLv3 - http://www.gnu.org/licenses/lgpl-3.0.txt
 
 package de.mossgrabers.bitwig.framework.daw;
 
+import java.text.DecimalFormat;
+
+import com.bitwig.extension.controller.api.BeatTimeFormatter;
+import com.bitwig.extension.controller.api.ControllerHost;
+import com.bitwig.extension.controller.api.SettableEnumValue;
+import com.bitwig.extension.controller.api.TimeSignatureValue;
+import com.bitwig.extension.controller.api.Transport;
+
+import de.mossgrabers.bitwig.framework.daw.data.MetronomeVolumeParameterImpl;
 import de.mossgrabers.bitwig.framework.daw.data.ParameterImpl;
-import de.mossgrabers.bitwig.framework.daw.data.RangedValueImpl;
 import de.mossgrabers.bitwig.framework.daw.data.Util;
 import de.mossgrabers.framework.controller.valuechanger.IValueChanger;
 import de.mossgrabers.framework.daw.IApplication;
@@ -17,14 +25,6 @@ import de.mossgrabers.framework.daw.constants.TransportConstants;
 import de.mossgrabers.framework.parameter.IParameter;
 import de.mossgrabers.framework.utils.StringUtils;
 
-import com.bitwig.extension.controller.api.BeatTimeFormatter;
-import com.bitwig.extension.controller.api.ControllerHost;
-import com.bitwig.extension.controller.api.SettableEnumValue;
-import com.bitwig.extension.controller.api.TimeSignatureValue;
-import com.bitwig.extension.controller.api.Transport;
-
-import java.text.DecimalFormat;
-
 
 /**
  * Encapsulates the Transport instance.
@@ -33,13 +33,13 @@ import java.text.DecimalFormat;
  */
 public class TransportImpl implements ITransport
 {
-    /** No preroll. */
+    /** No pre-roll. */
     private static final String            PREROLL_NONE            = "none";
-    /** 1 bar preroll. */
+    /** 1 bar pre-roll. */
     private static final String            PREROLL_1_BAR           = "one_bar";
-    /** 2 bar preroll. */
+    /** 2 bar pre-roll. */
     private static final String            PREROLL_2_BARS          = "two_bars";
-    /** 4 bar preroll. */
+    /** 4 bar pre-Wroll. */
     private static final String            PREROLL_4_BARS          = "four_bars";
 
     private static final String            ACTION_JUMP_TO_END      = "jump_to_end_of_arrangement";
@@ -102,7 +102,7 @@ public class TransportImpl implements ITransport
         this.transport.isFillModeActive ().markInterested ();
 
         this.crossfadeParameter = new ParameterImpl (valueChanger, this.transport.crossfade ());
-        this.metronomeVolumeParameter = new RangedValueImpl ("Metronome Volume", valueChanger, this.transport.metronomeVolume ());
+        this.metronomeVolumeParameter = new MetronomeVolumeParameterImpl (valueChanger, this.transport.metronomeVolume ());
         this.transport.tempo ().markInterested ();
 
         final TimeSignatureValue ts = this.transport.timeSignature ();
@@ -511,7 +511,7 @@ public class TransportImpl implements ITransport
     @Override
     public void changePosition (final boolean increase, final boolean slow)
     {
-        final double frac = slow ? TransportConstants.INC_FRACTION_TIME_SLOW : TransportConstants.INC_FRACTION_TIME;
+        final double frac = getTimeFraction (slow);
         final double position = this.transport.playStartPosition ().get ();
         double newPos = Math.max (0, position + (increase ? frac : -frac));
 
@@ -520,6 +520,18 @@ public class TransportImpl implements ITransport
         newPos = intPosition * frac;
 
         this.setPosition (newPos);
+    }
+
+
+    /**
+     * Get the fraction to use for time changes.
+     *
+     * @param slow Slow change if true otherwise fast
+     * @return The fraction to change
+     */
+    private static double getTimeFraction (final boolean slow)
+    {
+        return slow ? TransportConstants.INC_FRACTION_TIME_SLOW : TransportConstants.INC_FRACTION_TIME;
     }
 
 
@@ -535,7 +547,7 @@ public class TransportImpl implements ITransport
     @Override
     public void changeLoopStart (final boolean increase, final boolean slow)
     {
-        final double frac = slow ? TransportConstants.INC_FRACTION_TIME_SLOW : TransportConstants.INC_FRACTION_TIME;
+        final double frac = getTimeFraction (slow);
         this.transport.arrangerLoopStart ().inc (increase ? frac : -frac);
     }
 
@@ -580,7 +592,7 @@ public class TransportImpl implements ITransport
     @Override
     public void changeLoopLength (final boolean increase, final boolean slow)
     {
-        final double frac = slow ? TransportConstants.INC_FRACTION_TIME_SLOW : TransportConstants.INC_FRACTION_TIME;
+        final double frac = getTimeFraction (slow);
         this.transport.arrangerLoopDuration ().inc (increase ? frac : -frac);
     }
 

@@ -1,5 +1,5 @@
 // Written by Jürgen Moßgraber - mossgrabers.de
-// (c) 2017-2023
+// (c) 2017-2024
 // Licensed under LGPLv3 - http://www.gnu.org/licenses/lgpl-3.0.txt
 
 package de.mossgrabers.framework.controller;
@@ -280,7 +280,7 @@ public abstract class AbstractControlSurface<C extends Configuration> implements
 
         Views preferredView = this.viewManager.getPreferredView (track.getPosition ());
         if (preferredView == null)
-            preferredView = track.canHoldNotes () ? this.configuration.getPreferredNoteView () : this.configuration.getPreferredAudioView ();
+            preferredView = track.canHoldNotes () ? this.configuration.getStartupView () : this.configuration.getPreferredAudioView ();
         final IView view = this.viewManager.get (preferredView);
         if (view == null)
             return;
@@ -354,7 +354,7 @@ public abstract class AbstractControlSurface<C extends Configuration> implements
     @Override
     public void addTextDisplay (final ITextDisplay display)
     {
-        display.setHardwareDisplay (this.surfaceFactory.createTextDisplay (this.surfaceID, OutputID.get (OutputID.DISPLAY1, this.textDisplays.size ()), display.getNoOfLines ()));
+        display.setHardwareDisplay (this.surfaceFactory.createTextDisplay (this.surfaceID, OutputID.get (OutputID.DISPLAY1, this.textDisplays.size ()), display.getNumberOfLines ()));
         this.textDisplays.add (display);
     }
 

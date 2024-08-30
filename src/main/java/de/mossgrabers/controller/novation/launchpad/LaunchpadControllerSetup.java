@@ -1,8 +1,12 @@
 // Written by Jürgen Moßgraber - mossgrabers.de
-// (c) 2017-2023
+// (c) 2017-2024
 // Licensed under LGPLv3 - http://www.gnu.org/licenses/lgpl-3.0.txt
 
 package de.mossgrabers.controller.novation.launchpad;
+
+import java.util.HashSet;
+import java.util.Map.Entry;
+import java.util.Set;
 
 import de.mossgrabers.controller.novation.launchpad.command.trigger.DeleteCommand;
 import de.mossgrabers.controller.novation.launchpad.command.trigger.LaunchpadCursorCommand;
@@ -99,10 +103,6 @@ import de.mossgrabers.framework.utils.ButtonEvent;
 import de.mossgrabers.framework.view.TempoView;
 import de.mossgrabers.framework.view.Views;
 import de.mossgrabers.framework.view.sequencer.ClipLengthView;
-
-import java.util.HashSet;
-import java.util.Map.Entry;
-import java.util.Set;
 
 
 /**
@@ -638,7 +638,7 @@ public class LaunchpadControllerSetup extends AbstractControllerSetup<LaunchpadC
     public void startup ()
     {
         final LaunchpadControlSurface surface = this.getSurface ();
-        surface.getViewManager ().setActive (this.configuration.shouldStartWithSessionView () ? Views.SESSION : this.configuration.getPreferredNoteView ());
+        surface.getViewManager ().setActive (this.configuration.shouldStartWithSessionView () ? Views.SESSION : this.configuration.getStartupView ());
         surface.getModeManager ().setActive (Modes.DUMMY);
     }
 
@@ -696,6 +696,16 @@ public class LaunchpadControllerSetup extends AbstractControllerSetup<LaunchpadC
         // Do not restore preferred play view view if certain views are active
         if (!this.getSurface ().getViewManager ().isActive (Views.MIX, Views.USER, Views.TRACK_PAN, Views.TRACK_VOLUME, Views.TRACK_SENDS, Views.DEVICE))
             super.handleTrackChange (isSelected);
+    }
+
+
+    /** {@inheritDoc} */
+    @Override
+    protected void recallLastView ()
+    {
+        final LaunchpadControlSurface surface = this.getSurface ();
+        if (!surface.getViewManager ().isActive (Views.SESSION) || surface.isPressed (ButtonID.TRACK))
+            surface.recallPreferredView (this.model.getCursorTrack ());
     }
 
 

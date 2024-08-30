@@ -1,14 +1,14 @@
 // Written by Jürgen Moßgraber - mossgrabers.de
-// (c) 2017-2023
+// (c) 2017-2024
 // Licensed under LGPLv3 - http://www.gnu.org/licenses/lgpl-3.0.txt
 
 package de.mossgrabers.framework.controller.color;
 
-import de.mossgrabers.framework.controller.ButtonID;
-import de.mossgrabers.framework.daw.DAWColor;
-
 import java.util.HashMap;
 import java.util.Map;
+
+import de.mossgrabers.framework.controller.ButtonID;
+import de.mossgrabers.framework.daw.DAWColor;
 
 
 /**
@@ -102,7 +102,7 @@ public class ColorManager
      *
      * @param colorIndex The color index
      * @param buttonID The ID of the button in case button LEDs have a different color range
-     * @return The color index
+     * @return The color
      */
     public ColorEx getColor (final int colorIndex, final ButtonID buttonID)
     {

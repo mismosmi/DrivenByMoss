@@ -1,10 +1,14 @@
 // Written by Jürgen Moßgraber - mossgrabers.de
-// (c) 2017-2023
+// (c) 2017-2024
 // Licensed under LGPLv3 - http://www.gnu.org/licenses/lgpl-3.0.txt
 
 package de.mossgrabers.controller.mackie.mcu.mode;
 
+import java.util.Optional;
+
 import de.mossgrabers.controller.mackie.mcu.MCUConfiguration;
+import de.mossgrabers.controller.mackie.mcu.MCUConfiguration.MainDisplay;
+import de.mossgrabers.controller.mackie.mcu.MCUConfiguration.SecondDisplay;
 import de.mossgrabers.controller.mackie.mcu.MCUControllerSetup;
 import de.mossgrabers.controller.mackie.mcu.controller.MCUControlSurface;
 import de.mossgrabers.framework.controller.ButtonID;
@@ -29,8 +33,6 @@ import de.mossgrabers.framework.parameter.IParameter;
 import de.mossgrabers.framework.parameterprovider.IParameterProvider;
 import de.mossgrabers.framework.utils.ButtonEvent;
 import de.mossgrabers.framework.utils.StringUtils;
-
-import java.util.Optional;
 
 
 /**
@@ -135,8 +137,11 @@ public abstract class BaseMode<B extends IItem> extends AbstractParameterMode<MC
             final boolean isLayerMode = Modes.isLayerMode (this.surface.getModeManager ().getActiveID ());
             parameterProvider = ((AbstractParameterMode<?, ?, ?>) modeManager.get (isLayerMode ? Modes.DEVICE_LAYER_VOLUME : Modes.VOLUME)).getParameterProvider ();
         }
-        for (int i = 0; i < this.controls.size (); i++)
-            this.surface.getContinuous (ContinuousID.get (ContinuousID.FADER1, i)).bind (parameterProvider.get (i));
+        if (parameterProvider != null)
+        {
+            for (int i = 0; i < this.controls.size (); i++)
+                this.surface.getContinuous (ContinuousID.get (ContinuousID.FADER1, i)).bind (parameterProvider.get (i));
+        }
     }
 
 
@@ -146,9 +151,13 @@ public abstract class BaseMode<B extends IItem> extends AbstractParameterMode<MC
     {
         this.setTouchedKnob (index, isTouched);
 
-        final IParameter parameter = this.getParameterProvider ().get (index);
-        if (parameter.doesExist ())
-            parameter.touchValue (isTouched);
+        final IParameterProvider parameterProvider = this.getParameterProvider ();
+        if (parameterProvider != null)
+        {
+            final IParameter parameter = parameterProvider.get (index);
+            if (parameter.doesExist ())
+                parameter.touchValue (isTouched);
+        }
     }
 
 
@@ -229,7 +238,9 @@ public abstract class BaseMode<B extends IItem> extends AbstractParameterMode<MC
      */
     protected void resetParameter (final int index)
     {
-        this.resetParameter (this.getParameterProvider ().get (index));
+        final IParameterProvider parameterProvider = this.getParameterProvider ();
+        if (parameterProvider != null)
+            this.resetParameter (parameterProvider.get (index));
     }
 
 
@@ -275,6 +286,8 @@ public abstract class BaseMode<B extends IItem> extends AbstractParameterMode<MC
     protected void updateKnobLEDs (final int [] knobLedModes)
     {
         final IParameterProvider parameterProvider = this.getParameterProvider ();
+        if (parameterProvider == null)
+            return;
         final int upperBound = this.model.getValueChanger ().getUpperBound ();
         for (int i = 0; i < 8; i++)
         {
@@ -296,20 +309,34 @@ public abstract class BaseMode<B extends IItem> extends AbstractParameterMode<MC
 
 
     /**
-     * Draw the parameter names in the first row of the display.
+     * Draw the parameter names in the 1st row of the main display.
      */
     protected void drawParameterHeader ()
     {
+        this.drawParameterHeader (this.surface.getTextDisplay (), 0);
+    }
+
+
+    /**
+     * Draw the parameter names in a specific row of the display.
+     *
+     * @param display The display to write to
+     * @param row The index of the row to write to
+     */
+    protected void drawParameterHeader (final ITextDisplay display, final int row)
+    {
         final IParameterProvider parameterProvider = this.getParameterProvider ();
-        final ITextDisplay d = this.surface.getTextDisplay ().clear ();
-        final int textLength = this.getTextLength ();
+        if (parameterProvider == null)
+            return;
+        display.clear ();
+        final int textLength = Math.min (display.getNumberOfCellCharacters (), this.getTextLength ());
         for (int i = 0; i < 8; i++)
         {
             final IParameter parameter = parameterProvider.get (i);
             if (parameter.doesExist ())
-                d.setCell (0, i, StringUtils.shortenAndFixASCII (parameter.getName (), textLength));
+                display.setCell (row, i, StringUtils.shortenAndFixASCII (parameter.getName (), textLength));
         }
-        d.done (0);
+        display.done (row);
     }
 
 
@@ -317,18 +344,22 @@ public abstract class BaseMode<B extends IItem> extends AbstractParameterMode<MC
     @Override
     public void updateDisplay ()
     {
-        if (!this.configuration.hasDisplay1 ())
+        final MainDisplay mainDisplayType = this.configuration.getMainDisplayType ();
+        if (mainDisplayType == MainDisplay.OFF)
             return;
+        final boolean isAsparion = mainDisplayType == MainDisplay.ASPARION;
 
         this.drawDisplay2 ();
 
-        if (this.configuration.isDisplayTrackNames ())
+        if (isAsparion || this.configuration.isDisplayTrackNames ())
             this.drawTrackNameHeader ();
         else
             this.drawParameterHeader ();
 
         final ITextDisplay d = this.surface.getTextDisplay ();
         final IParameterProvider parameterProvider = this.getParameterProvider ();
+        if (parameterProvider == null)
+            return;
 
         final ColorEx [] colors = new ColorEx [8];
         final int textLength = this.getTextLength ();
@@ -348,63 +379,73 @@ public abstract class BaseMode<B extends IItem> extends AbstractParameterMode<MC
 
 
     /**
-     * Fill the second display of the iCON QCon Pro.
+     * Fill the second display of the iCON QCon Pro / V1M.
      */
     protected void drawDisplay2 ()
     {
-        if (!this.configuration.hasDisplay2 ())
-            return;
-
-        final ITrackBank tb = this.getTrackBank ();
-
-        final ITextDisplay d2 = this.surface.getTextDisplay (1);
-        final int extenderOffset = this.getExtenderOffset ();
-
-        final boolean isMainDevice = this.surface.isMainDevice ();
-
-        final boolean isLayerMode = Modes.isLayerMode (this.surface.getModeManager ().getActiveID ());
-        if (isLayerMode)
+        final SecondDisplay secondDisplay = this.configuration.getSecondDisplayType ();
+        switch (secondDisplay)
         {
-            final ICursorDevice cursorDevice = this.model.getCursorDevice ();
-            final IChannelBank<? extends IChannel> layerBank = cursorDevice.hasDrumPads () ? cursorDevice.getDrumPadBank () : cursorDevice.getLayerBank ();
-            for (int i = 0; i < 8; i++)
-            {
-                final IChannel c = layerBank.getItem (extenderOffset + i);
-                d2.setCell (0, i, StringUtils.shortenAndFixASCII (c.getName (), isMainDevice ? 6 : 7));
-            }
+            case ASPARION:
+                this.drawParameterHeader (this.surface.getTextDisplay (1), 0);
+                break;
+
+            case QCON, V1M:
+                final boolean isMainDevice = this.surface.isMainDevice ();
+                final boolean isShort = isMainDevice && secondDisplay == SecondDisplay.QCON;
+                final ITrackBank tb = this.getTrackBank ();
+                final ITextDisplay d2 = this.surface.getTextDisplay (1);
+                final int extenderOffset = this.getExtenderOffset ();
+                final boolean isLayerMode = Modes.isLayerMode (this.surface.getModeManager ().getActiveID ());
+                if (isLayerMode)
+                {
+                    final ICursorDevice cursorDevice = this.model.getCursorDevice ();
+                    final IChannelBank<? extends IChannel> layerBank = cursorDevice.hasDrumPads () ? cursorDevice.getDrumPadBank () : cursorDevice.getLayerBank ();
+                    for (int i = 0; i < 8; i++)
+                    {
+                        final IChannel c = layerBank.getItem (extenderOffset + i);
+                        d2.setCell (0, i, StringUtils.shortenAndFixASCII (c.getName (), isShort ? 6 : 7));
+                    }
+                }
+                else
+                {
+                    for (int i = 0; i < 8; i++)
+                    {
+                        final ITrack t = tb.getItem (extenderOffset + i);
+                        d2.setCell (0, i, StringUtils.shortenAndFixASCII (t.getName (), isShort ? 6 : 7));
+                    }
+                }
+
+                if (isShort)
+                    d2.setCell (0, 8, "Maste");
+
+                d2.done (0);
+                d2.clearRow (1);
+
+                if (isMainDevice)
+                {
+                    final IMasterTrack masterTrack = this.model.getMasterTrack ();
+                    final ICursorDevice cursorDevice = this.model.getCursorDevice ();
+                    final ITrack selectedTrack;
+                    if (masterTrack.isSelected ())
+                        selectedTrack = masterTrack;
+                    else
+                    {
+                        final Optional<ITrack> selectedItem = tb.getSelectedItem ();
+                        selectedTrack = selectedItem.isPresent () ? selectedItem.get () : EmptyTrack.getInstance (tb.getItem (0).getSendBank ().getPageSize ());
+                    }
+                    d2.setBlock (1, 0, "  Sel. track:").setBlock (1, 1, selectedTrack == null ? "None" : StringUtils.shortenAndFixASCII (selectedTrack.getName (), 11));
+                    d2.setBlock (1, 2, "  Sel. devce:").setBlock (1, 3, cursorDevice.doesExist () ? StringUtils.shortenAndFixASCII (cursorDevice.getName (), 11) : "None");
+                }
+
+                d2.done (1);
+                break;
+
+            default:
+            case OFF:
+                // Off
+                break;
         }
-        else
-        {
-            for (int i = 0; i < 8; i++)
-            {
-                final ITrack t = tb.getItem (extenderOffset + i);
-                d2.setCell (0, i, StringUtils.shortenAndFixASCII (t.getName (), isMainDevice ? 6 : 7));
-            }
-        }
-
-        if (isMainDevice)
-            d2.setCell (0, 8, "Maste");
-
-        d2.done (0);
-        d2.clearRow (1);
-
-        if (isMainDevice)
-        {
-            final IMasterTrack masterTrack = this.model.getMasterTrack ();
-            final ICursorDevice cursorDevice = this.model.getCursorDevice ();
-            final ITrack selectedTrack;
-            if (masterTrack.isSelected ())
-                selectedTrack = masterTrack;
-            else
-            {
-                final Optional<ITrack> selectedItem = tb.getSelectedItem ();
-                selectedTrack = selectedItem.isPresent () ? selectedItem.get () : EmptyTrack.getInstance (tb.getItem (0).getSendBank ().getPageSize ());
-            }
-            d2.setBlock (1, 0, "Sel. track:").setBlock (1, 1, selectedTrack == null ? "None" : StringUtils.shortenAndFixASCII (selectedTrack.getName (), 11));
-            d2.setBlock (1, 2, "Sel. devce:").setBlock (1, 3, cursorDevice.doesExist () ? StringUtils.shortenAndFixASCII (cursorDevice.getName (), 11) : "None");
-        }
-
-        d2.done (1);
     }
 
 
@@ -428,7 +469,21 @@ public abstract class BaseMode<B extends IItem> extends AbstractParameterMode<MC
 
     protected int getTextLength ()
     {
-        return this.configuration.shouldUse7Characters () ? 7 : 6;
+        switch (this.configuration.getMainDisplayType ())
+        {
+            case ASPARION:
+                return 12;
+
+            case MACKIE_6_CHARACTERS:
+                return 6;
+
+            case MACKIE_7_CHARACTERS:
+                return 7;
+
+            default:
+            case OFF:
+                return 0;
+        }
     }
 
 

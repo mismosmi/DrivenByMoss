@@ -1,5 +1,5 @@
 // Written by Jürgen Moßgraber - mossgrabers.de
-// (c) 2017-2023
+// (c) 2017-2024
 // Licensed under LGPLv3 - http://www.gnu.org/licenses/lgpl-3.0.txt
 
 package de.mossgrabers.framework.command.trigger.transport;
@@ -22,7 +22,7 @@ import de.mossgrabers.framework.utils.ButtonEvent;
  */
 public class StopCommand<S extends IControlSurface<C>, C extends Configuration> extends AbstractDoubleTriggerCommand<S, C>
 {
-    private final ITransport transport;
+    protected final ITransport transport;
 
 
     /**

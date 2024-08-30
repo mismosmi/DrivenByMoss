@@ -1,8 +1,11 @@
 // Written by Jürgen Moßgraber - mossgrabers.de
-// (c) 2017-2023
+// (c) 2017-2024
 // Licensed under LGPLv3 - http://www.gnu.org/licenses/lgpl-3.0.txt
 
 package de.mossgrabers.controller.osc.module;
+
+import java.util.LinkedList;
+import java.util.Optional;
 
 import de.mossgrabers.controller.osc.OSCConfiguration;
 import de.mossgrabers.controller.osc.exception.IllegalParameterException;
@@ -30,9 +33,6 @@ import de.mossgrabers.framework.daw.data.bank.ISendBank;
 import de.mossgrabers.framework.daw.data.empty.EmptyLayer;
 import de.mossgrabers.framework.osc.IOpenSoundControlWriter;
 import de.mossgrabers.framework.parameter.IParameter;
-
-import java.util.LinkedList;
-import java.util.Optional;
 
 
 /**
@@ -558,6 +558,10 @@ public class DeviceModule extends AbstractModule
         final IChannel layer = layerBank.getItem (layerIndex);
         switch (command)
         {
+            case TAG_ACTIVATED:
+                layer.setIsActivated (toInteger (value) > 0);
+                break;
+
             case TAG_SELECT, TAG_SELECTED:
                 layer.select ();
                 break;
@@ -572,6 +576,8 @@ public class DeviceModule extends AbstractModule
                     layer.setVolume (toInteger (value));
                 else if (TAG_INDICATE.equals (path.get (0)))
                     layer.setVolumeIndication (isTrigger (value));
+                else if (TAG_RESET.equals (path.get (0)))
+                    layer.resetVolume ();
                 else if (TAG_TOUCHED.equals (path.get (0)))
                     layer.touchVolume (isTrigger (value));
                 break;
@@ -581,6 +587,8 @@ public class DeviceModule extends AbstractModule
                     layer.setPan (toInteger (value));
                 else if (TAG_INDICATE.equals (path.get (0)))
                     layer.setPanIndication (isTrigger (value));
+                else if (TAG_RESET.equals (path.get (0)))
+                    layer.resetPan ();
                 else if (TAG_TOUCHED.equals (path.get (0)))
                     layer.touchPan (isTrigger (value));
                 break;
@@ -647,7 +655,7 @@ public class DeviceModule extends AbstractModule
                 param.setIndication (isTrigger (value));
                 break;
 
-            case "reset":
+            case TAG_RESET:
                 param.resetValue ();
                 break;
 

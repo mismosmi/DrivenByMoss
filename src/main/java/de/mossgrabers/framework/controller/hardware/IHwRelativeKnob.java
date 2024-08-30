@@ -1,8 +1,11 @@
 // Written by Jürgen Moßgraber - mossgrabers.de
-// (c) 2017-2023
+// (c) 2017-2024
 // Licensed under LGPLv3 - http://www.gnu.org/licenses/lgpl-3.0.txt
 
 package de.mossgrabers.framework.controller.hardware;
+
+import de.mossgrabers.framework.observer.IValueObserver;
+
 
 /**
  * Interface for a proxy to a knob on a hardware controller.
@@ -11,6 +14,14 @@ package de.mossgrabers.framework.controller.hardware;
  */
 public interface IHwRelativeKnob extends IHwContinuousControl
 {
+    /**
+     * Registers an observer to get notified when the value changes.
+     *
+     * @param observer The observer to register
+     */
+    void addHasChangedObserver (IValueObserver<Void> observer);
+
+
     /**
      * Set the sensitivity of the relative knob.
      *

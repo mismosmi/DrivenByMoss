@@ -1,8 +1,12 @@
 // Written by Jürgen Moßgraber - mossgrabers.de
-// (c) 2017-2023
+// (c) 2017-2024
 // Licensed under LGPLv3 - http://www.gnu.org/licenses/lgpl-3.0.txt
 
 package de.mossgrabers.controller.ableton.push.mode;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
 
 import de.mossgrabers.controller.ableton.push.PushConfiguration;
 import de.mossgrabers.controller.ableton.push.command.continuous.IPush3Encoder;
@@ -26,14 +30,10 @@ import de.mossgrabers.framework.daw.data.bank.ISceneBank;
 import de.mossgrabers.framework.daw.data.bank.ITrackBank;
 import de.mossgrabers.framework.featuregroup.AbstractFeatureGroup;
 import de.mossgrabers.framework.featuregroup.AbstractMode;
+import de.mossgrabers.framework.parameterprovider.track.VolumeParameterProvider;
 import de.mossgrabers.framework.utils.ButtonEvent;
 import de.mossgrabers.framework.utils.Pair;
 import de.mossgrabers.framework.utils.StringUtils;
-import de.mossgrabers.framework.view.Views;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
 
 
 /**
@@ -77,6 +77,8 @@ public class SessionMode extends AbstractTrackMode implements IPush3Encoder
         this.startSceneCommand = new StartSceneCommand<> (model, surface, -1, this.sceneBank);
 
         this.rowDisplayMode = this.isPushModern ? RowDisplayMode.ALL : RowDisplayMode.UPPER;
+
+        this.setParameterProvider (new VolumeParameterProvider (model));
     }
 
 
@@ -158,10 +160,10 @@ public class SessionMode extends AbstractTrackMode implements IPush3Encoder
     @Override
     public void updateDisplay1 (final ITextDisplay display)
     {
-        if (this.surface.getViewManager ().isActive (Views.SESSION))
-            this.updateDisplay1Clips (display);
-        else
+        if (this.configuration.isScenesClipViewSelected ())
             this.updateDisplay1Scenes (display);
+        else
+            this.updateDisplay1Clips (display);
     }
 
 
@@ -169,10 +171,10 @@ public class SessionMode extends AbstractTrackMode implements IPush3Encoder
     @Override
     public void updateDisplay2 (final IGraphicDisplay display)
     {
-        if (this.surface.getViewManager ().isActive (Views.SESSION))
-            this.updateDisplay2Clips (display);
-        else
+        if (this.configuration.isScenesClipViewSelected ())
             this.updateDisplay2Scenes (display);
+        else
+            this.updateDisplay2Clips (display);
     }
 
 
@@ -182,7 +184,7 @@ public class SessionMode extends AbstractTrackMode implements IPush3Encoder
     {
         final boolean isLeft = !this.model.getValueChanger ().isIncrease (value);
 
-        if (!this.surface.getViewManager ().isActive (Views.SESSION))
+        if (this.configuration.isScenesClipViewSelected ())
         {
             this.clipLauncherNavigator.navigateScenes (isLeft);
             return;
@@ -202,10 +204,10 @@ public class SessionMode extends AbstractTrackMode implements IPush3Encoder
         if (event != ButtonEvent.DOWN)
             return;
 
-        if (this.surface.getViewManager ().isActive (Views.SESSION))
-            this.startClipCommand.execute (event, 0);
-        else
+        if (this.configuration.isScenesClipViewSelected ())
             this.startSceneCommand.execute (event, 0);
+        else
+            this.startClipCommand.execute (event, 0);
     }
 
 
@@ -216,7 +218,7 @@ public class SessionMode extends AbstractTrackMode implements IPush3Encoder
         if (event != ButtonEvent.DOWN)
             return;
 
-        if (!this.surface.getViewManager ().isActive (Views.SESSION))
+        if (this.configuration.isScenesClipViewSelected ())
         {
             this.clipLauncherNavigator.navigateScenes (true);
             return;
@@ -236,7 +238,7 @@ public class SessionMode extends AbstractTrackMode implements IPush3Encoder
         if (event != ButtonEvent.DOWN)
             return;
 
-        if (!this.surface.getViewManager ().isActive (Views.SESSION))
+        if (this.configuration.isScenesClipViewSelected ())
         {
             this.clipLauncherNavigator.navigateScenes (false);
             return;

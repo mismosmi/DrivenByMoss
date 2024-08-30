@@ -1,5 +1,5 @@
 // Written by Jürgen Moßgraber - mossgrabers.de
-// (c) 2017-2023
+// (c) 2017-2024
 // Licensed under LGPLv3 - http://www.gnu.org/licenses/lgpl-3.0.txt
 
 package de.mossgrabers.controller.ableton.push.controller;
@@ -280,5 +280,25 @@ public class Push1Display extends AbstractTextDisplay
             menu.add (new Pair<> (itemName, Boolean.valueOf (pos == selectedIndex)));
         }
         return menu;
+    }
+
+
+    /** {@inheritDoc} */
+    @Override
+    protected void updateNotification ()
+    {
+        final int blockLength = 17;
+        final String trimmed = this.notificationMessage.trim ();
+        final int length = trimmed.length ();
+        if (length > blockLength)
+        {
+            super.updateNotification ();
+            return;
+        }
+
+        String text = this.currentMessage[0].substring (0, this.noOfCharacters - blockLength) + StringUtils.pad (trimmed, blockLength);
+        this.updateLine (0, text, this.currentMessage[0]);
+        text = this.currentMessage[1].substring (0, this.noOfCharacters - blockLength) + StringUtils.pad ("", blockLength);
+        this.updateLine (1, text, this.currentMessage[1]);
     }
 }

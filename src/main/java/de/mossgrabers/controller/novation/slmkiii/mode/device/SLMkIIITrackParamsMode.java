@@ -1,5 +1,5 @@
 // Written by Jürgen Moßgraber - mossgrabers.de
-// (c) 2017-2023
+// (c) 2017-2024
 // Licensed under LGPLv3 - http://www.gnu.org/licenses/lgpl-3.0.txt
 
 package de.mossgrabers.controller.novation.slmkiii.mode.device;
@@ -53,7 +53,8 @@ public class SLMkIIITrackParamsMode extends AbstractParametersMode<IParameter>
         }
 
         // Normal behavior - user parameters
-        this.selectItemPage (index);
+        final IParameterPageBank parameterPageBank = ((IParameterBank) this.bank).getPageBank ();
+        parameterPageBank.selectPage (index);
     }
 
 
@@ -79,7 +80,7 @@ public class SLMkIIITrackParamsMode extends AbstractParametersMode<IParameter>
         final SLMkIIIDisplay d = this.surface.getDisplay ();
         d.clear ();
 
-        d.setCell (0, 8, "Track FX").setCell (1, 8, "Page");
+        d.setCell (0, 8, "Track FX").setCell (1, 8, this.model.getCursorTrack ().getName (8));
 
         // Row 1 & 2
         for (int i = 0; i < this.bank.getPageSize (); i++)

@@ -1,13 +1,17 @@
 // Written by Jürgen Moßgraber - mossgrabers.de
-// (c) 2017-2023
+// (c) 2017-2024
 // Licensed under LGPLv3 - http://www.gnu.org/licenses/lgpl-3.0.txt
 
 package de.mossgrabers.framework;
+
+import java.util.Optional;
+import java.util.function.Supplier;
 
 import de.mossgrabers.framework.configuration.Configuration;
 import de.mossgrabers.framework.controller.IControlSurface;
 import de.mossgrabers.framework.controller.display.IDisplay;
 import de.mossgrabers.framework.daw.GrooveParameterID;
+import de.mossgrabers.framework.daw.IGroove;
 import de.mossgrabers.framework.daw.IModel;
 import de.mossgrabers.framework.daw.ITransport;
 import de.mossgrabers.framework.daw.clip.INoteClip;
@@ -15,6 +19,7 @@ import de.mossgrabers.framework.daw.constants.DeviceID;
 import de.mossgrabers.framework.daw.data.ICursorDevice;
 import de.mossgrabers.framework.daw.data.ILayer;
 import de.mossgrabers.framework.daw.data.IScene;
+import de.mossgrabers.framework.daw.data.ISend;
 import de.mossgrabers.framework.daw.data.ISpecificDevice;
 import de.mossgrabers.framework.daw.data.ITrack;
 import de.mossgrabers.framework.daw.data.bank.IDrumPadBank;
@@ -26,9 +31,6 @@ import de.mossgrabers.framework.daw.data.bank.ITrackBank;
 import de.mossgrabers.framework.featuregroup.IMode;
 import de.mossgrabers.framework.parameter.IParameter;
 import de.mossgrabers.framework.scale.Scales;
-
-import java.util.Optional;
-import java.util.function.Supplier;
 
 
 /**
@@ -47,6 +49,7 @@ public class MVHelper<S extends IControlSurface<C>, C extends Configuration>
 
     private final IModel        model;
     private final ITransport    transport;
+    private final IGroove       groove;
     private final S             surface;
     private final IDisplay      display;
 
@@ -63,6 +66,7 @@ public class MVHelper<S extends IControlSurface<C>, C extends Configuration>
         this.surface = surface;
         this.display = this.surface == null ? null : this.surface.getDisplay ();
         this.transport = this.model == null ? null : this.model.getTransport ();
+        this.groove = this.model == null ? null : this.model.getGroove ();
     }
 
 
@@ -155,6 +159,36 @@ public class MVHelper<S extends IControlSurface<C>, C extends Configuration>
 
 
     /**
+     * Display the name of the nth send of the selected track.
+     *
+     * @param sendIndex The index of the send to notify
+     */
+    public void notifySelectedSend (final int sendIndex)
+    {
+        this.delayDisplay ( () -> {
+
+            final ITrackBank trackBank = this.model.getTrackBank ();
+            Optional<ITrack> selectedTrack = trackBank.getSelectedItem ();
+            if (selectedTrack.isEmpty ())
+            {
+                final ITrack item = trackBank.getItem (0);
+                selectedTrack = item.doesExist () ? Optional.of (item) : Optional.empty ();
+            }
+            String sendModeName = "Send " + (sendIndex + 1) + ": ";
+            if (selectedTrack.isPresent ())
+            {
+                final ISend send = selectedTrack.get ().getSendBank ().getItem (sendIndex);
+                sendModeName += send.doesExist () ? send.getName () : "-";
+            }
+            else
+                sendModeName += "-";
+            return sendModeName;
+
+        });
+    }
+
+
+    /**
      * Display the name of the selected cursor device.
      */
     public void notifySelectedDevice ()
@@ -204,7 +238,7 @@ public class MVHelper<S extends IControlSurface<C>, C extends Configuration>
             {
                 String pageName = selectedItem.get ();
                 if (pageName == null || pageName.isBlank ())
-                    pageName = "None";
+                    pageName = NONE;
                 text += " - " + pageName;
             }
 
@@ -269,13 +303,17 @@ public class MVHelper<S extends IControlSurface<C>, C extends Configuration>
      * @param bank The parameter bank from which to get the selected page
      * @param prefix A text prefix to add
      */
-    private void notifySelectedParameterPage (final IParameterBank bank, final String prefix)
+    public void notifySelectedParameterPage (final IParameterBank bank, final String prefix)
     {
         this.delayDisplay ( () -> {
 
             final Optional<String> selectedItem = bank.getPageBank ().getSelectedItem ();
             if (selectedItem.isPresent ())
-                return prefix + "Page: " + selectedItem.get ();
+            {
+                final String name = selectedItem.get ();
+                if (!name.isBlank ())
+                    return prefix + "Page: " + name;
+            }
             return prefix + "Page: " + NONE;
 
         });
@@ -352,11 +390,47 @@ public class MVHelper<S extends IControlSurface<C>, C extends Configuration>
 
 
     /**
+     * Display the groove state.
+     */
+    public void notifyGrooveEnablement ()
+    {
+        this.delayDisplay ( () -> "Groove: " + (this.groove.getParameter (GrooveParameterID.ENABLED).getValue () == 0 ? "Off" : "On"));
+    }
+
+
+    /**
      * Display the current shuffle amount.
      */
     public void notifyShuffle ()
     {
-        this.delayDisplay ( () -> "Shuffle: " + this.model.getGroove ().getParameter (GrooveParameterID.SHUFFLE_AMOUNT).getDisplayedValue ());
+        this.delayDisplay ( () -> "Shuffle: " + this.groove.getParameter (GrooveParameterID.SHUFFLE_AMOUNT).getDisplayedValue ());
+    }
+
+
+    /**
+     * Display the arranger repeat state.
+     */
+    public void notifyArrangerRepeat ()
+    {
+        this.delayDisplay ( () -> "Repeat: " + (this.transport.isLoop () ? "On" : "Off"));
+    }
+
+
+    /**
+     * Display the metronome state.
+     */
+    public void notifyMetronome ()
+    {
+        this.delayDisplay ( () -> "Metronome: " + (this.transport.isMetronomeOn () ? "On" : "Off"));
+    }
+
+
+    /**
+     * Display the metronome ticks state.
+     */
+    public void notifyMetronomeTicks ()
+    {
+        this.delayDisplay ( () -> "Ticks: " + (this.transport.isMetronomeTicksOn () ? "On" : "Off"));
     }
 
 
@@ -389,6 +463,33 @@ public class MVHelper<S extends IControlSurface<C>, C extends Configuration>
     public void notifyScale (final Scales scales)
     {
         this.delayDisplay ( () -> "Scale: " + scales.getScale ().getName ());
+    }
+
+
+    /**
+     * Display the state of the clip launcher automation.
+     */
+    public void notifyClipLauncherAutomation ()
+    {
+        this.delayDisplay ( () -> "Lnchr Autom.: " + (this.transport.isWritingClipLauncherAutomation () ? "On" : "Off"));
+    }
+
+
+    /**
+     * Display the state of the arranger automation.
+     */
+    public void notifyArrangerAutomation ()
+    {
+        this.delayDisplay ( () -> "Arr. Autom.: " + (this.transport.isWritingArrangerAutomation () ? "On" : "Off"));
+    }
+
+
+    /**
+     * Display the active automation write mode.
+     */
+    public void notifyAutomationWriteMode ()
+    {
+        this.delayDisplay ( () -> "Autom.: " + this.transport.getAutomationWriteMode ().getLabel ());
     }
 
 

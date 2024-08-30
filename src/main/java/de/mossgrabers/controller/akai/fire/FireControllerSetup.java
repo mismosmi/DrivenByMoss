@@ -1,5 +1,5 @@
 // Written by Jürgen Moßgraber - mossgrabers.de
-// (c) 2017-2023
+// (c) 2017-2024
 // Licensed under LGPLv3 - http://www.gnu.org/licenses/lgpl-3.0.txt
 
 package de.mossgrabers.controller.akai.fire;
@@ -26,7 +26,7 @@ import de.mossgrabers.controller.akai.fire.mode.FireParameterMode;
 import de.mossgrabers.controller.akai.fire.mode.FireTrackMixerMode;
 import de.mossgrabers.controller.akai.fire.mode.FireTrackMode;
 import de.mossgrabers.controller.akai.fire.mode.FireUserMode;
-import de.mossgrabers.controller.akai.fire.mode.NoteMode;
+import de.mossgrabers.controller.akai.fire.mode.FireNoteMode;
 import de.mossgrabers.controller.akai.fire.view.Drum4View;
 import de.mossgrabers.controller.akai.fire.view.DrumView64;
 import de.mossgrabers.controller.akai.fire.view.DrumXoXView;
@@ -187,7 +187,7 @@ public class FireControllerSetup extends AbstractControllerSetup<FireControlSurf
                 observer.parametersAdjusted ();
 
         }, FireControlSurface.FIRE_ALT);
-        modeManager.register (Modes.NOTE, new NoteMode (surface, this.model));
+        modeManager.register (Modes.NOTE, new FireNoteMode (surface, this.model));
     }
 
 
@@ -521,7 +521,7 @@ public class FireControllerSetup extends AbstractControllerSetup<FireControlSurf
     public void startup ()
     {
         final FireControlSurface surface = this.getSurface ();
-        surface.getViewManager ().setActive (this.configuration.shouldStartWithSessionView () ? Views.SESSION : this.configuration.getPreferredNoteView ());
+        surface.getViewManager ().setActive (this.configuration.shouldStartWithSessionView () ? Views.SESSION : this.configuration.getStartupView ());
         surface.getModeManager ().setActive (Modes.TRACK);
         this.modeSelectCommand.activateMode (Modes.TRACK);
     }

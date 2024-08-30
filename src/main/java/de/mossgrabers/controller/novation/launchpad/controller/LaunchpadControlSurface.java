@@ -1,8 +1,11 @@
 // Written by Jürgen Moßgraber - mossgrabers.de
-// (c) 2017-2023
+// (c) 2017-2024
 // Licensed under LGPLv3 - http://www.gnu.org/licenses/lgpl-3.0.txt
 
 package de.mossgrabers.controller.novation.launchpad.controller;
+
+import java.util.Map.Entry;
+import java.util.Optional;
 
 import de.mossgrabers.controller.novation.launchpad.LaunchpadConfiguration;
 import de.mossgrabers.controller.novation.launchpad.definition.ILaunchpadControllerDefinition;
@@ -22,9 +25,6 @@ import de.mossgrabers.framework.daw.midi.MidiConstants;
 import de.mossgrabers.framework.utils.ButtonEvent;
 import de.mossgrabers.framework.utils.StringUtils;
 import de.mossgrabers.framework.view.Views;
-
-import java.util.Map.Entry;
-import java.util.Optional;
 
 
 /**
@@ -276,7 +276,7 @@ public class LaunchpadControlSurface extends AbstractControlSurface<LaunchpadCon
 
 
     /**
-     * Send system exclusive data to the launchpad.
+     * Send system exclusive data to the Launchpad.
      *
      * @param data The data without the header and closing byte
      */

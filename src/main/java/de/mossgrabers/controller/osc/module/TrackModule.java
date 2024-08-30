@@ -1,5 +1,5 @@
 // Written by Jürgen Moßgraber - mossgrabers.de
-// (c) 2017-2023
+// (c) 2017-2024
 // Licensed under LGPLv3 - http://www.gnu.org/licenses/lgpl-3.0.txt
 
 package de.mossgrabers.controller.osc.module;
@@ -402,7 +402,7 @@ public class TrackModule extends AbstractModule
                     track.setVolume (toInteger (value));
                 else if (TAG_INDICATE.equals (path.get (0)))
                     track.setVolumeIndication (isTrigger (value));
-                else if ("reset".equals (path.get (0)))
+                else if (TAG_RESET.equals (path.get (0)))
                     track.resetVolume ();
                 else if (TAG_TOUCHED.equals (path.get (0)))
                     track.touchVolume (isTrigger (value));
@@ -413,7 +413,7 @@ public class TrackModule extends AbstractModule
                     track.setPan (toInteger (value));
                 else if (TAG_INDICATE.equals (path.get (0)))
                     track.setPanIndication (isTrigger (value));
-                else if ("reset".equals (path.get (0)))
+                else if (TAG_RESET.equals (path.get (0)))
                     track.resetPan ();
                 else if (TAG_TOUCHED.equals (path.get (0)))
                     track.touchPan (isTrigger (value));
@@ -569,14 +569,15 @@ public class TrackModule extends AbstractModule
                 if (isTrigger (value))
                     send.toggleEnabled ();
                 break;
-            case TAG_INDICATE:
-                send.setIndication (isTrigger (value));
-                break;
-            case TAG_TOUCHED:
-                send.touchValue (isTrigger (value));
-                break;
             case TAG_VOLUME:
-                send.setValue (toInteger (value));
+                if (path.isEmpty ())
+                    send.setValue (toInteger (value));
+                else if (TAG_INDICATE.equals (path.get (0)))
+                    send.setIndication (isTrigger (value));
+                else if (TAG_RESET.equals (path.get (0)))
+                    send.resetValue ();
+                else if (TAG_TOUCHED.equals (path.get (0)))
+                    send.touchValue (isTrigger (value));
                 break;
             default:
                 throw new UnknownCommandException (command);
@@ -599,12 +600,12 @@ public class TrackModule extends AbstractModule
             {
                 case "+":
                     if (isTrigger (value))
-                        parameterBank.selectNextPage ();
+                        parameterBank.selectNextItem ();
                     break;
 
                 case "-":
                     if (isTrigger (value))
-                        parameterBank.selectPreviousPage ();
+                        parameterBank.selectPreviousItem ();
                     break;
 
                 case "bank":
@@ -666,7 +667,7 @@ public class TrackModule extends AbstractModule
                 param.setIndication (isTrigger (value));
                 break;
 
-            case "reset":
+            case TAG_RESET:
                 param.resetValue ();
                 break;
 

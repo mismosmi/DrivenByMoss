@@ -1,5 +1,5 @@
 // Written by Jürgen Moßgraber - mossgrabers.de
-// (c) 2017-2023
+// (c) 2017-2024
 // Licensed under LGPLv3 - http://www.gnu.org/licenses/lgpl-3.0.txt
 
 package de.mossgrabers.controller.ableton.push.command.trigger;
@@ -41,18 +41,14 @@ public class SelectPlayViewCommand extends AbstractTriggerCommand<PushControlSur
         if (event != ButtonEvent.DOWN)
             return;
 
-        final ModeManager modeManager = this.surface.getModeManager ();
         final ViewManager viewManager = this.surface.getViewManager ();
         if (Views.isSessionView (viewManager.getActiveID ()))
         {
             this.surface.recallPreferredView (this.model.getCursorTrack ());
-
-            if (modeManager.isActive (Modes.SESSION, Modes.MARKERS) || modeManager.isTemporary ())
-                modeManager.setActive (this.surface.getConfiguration ().getMixerMode ());
-
             return;
         }
 
+        final ModeManager modeManager = this.surface.getModeManager ();
         if (modeManager.isActive (Modes.VIEW_SELECT))
             modeManager.restore ();
         else

@@ -1,17 +1,17 @@
 // Written by Jürgen Moßgraber - mossgrabers.de
-// (c) 2017-2023
+// (c) 2017-2024
 // Licensed under LGPLv3 - http://www.gnu.org/licenses/lgpl-3.0.txt
 
 package de.mossgrabers.controller.novation.launchpad.definition;
+
+import java.util.List;
+import java.util.UUID;
 
 import de.mossgrabers.controller.novation.launchpad.controller.LaunchpadControlSurface;
 import de.mossgrabers.controller.novation.launchpad.definition.button.LaunchpadButton;
 import de.mossgrabers.framework.utils.OperatingSystem;
 import de.mossgrabers.framework.utils.Pair;
 import de.mossgrabers.framework.utils.StringUtils;
-
-import java.util.List;
-import java.util.UUID;
 
 
 /**
@@ -87,7 +87,7 @@ public class LaunchpadProMk3ControllerDefinition extends AbstractLaunchpadDefini
                 midiDiscoveryPairs.add (this.addDeviceDiscoveryPair ("Launchpad Pro MK3 LPProMK3 MIDI", "Launchpad Pro MK3 LPProMK3 MIDI"));
                 break;
 
-            case MAC:
+            case MAC, MAC_ARM:
                 midiDiscoveryPairs.add (this.addDeviceDiscoveryPair ("Launchpad Pro MK3 LPProMK3 MIDI", "Launchpad Pro MK3 LPProMK3 MIDI"));
                 break;
 

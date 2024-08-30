@@ -1,12 +1,15 @@
 // Written by Jürgen Moßgraber - mossgrabers.de
-// (c) 2017-2023
+// (c) 2017-2024
 // Licensed under LGPLv3 - http://www.gnu.org/licenses/lgpl-3.0.txt
 
 package de.mossgrabers.controller.mackie.hui.mode.track;
 
+import java.util.Optional;
+
 import de.mossgrabers.controller.mackie.hui.HUIConfiguration;
 import de.mossgrabers.controller.mackie.hui.HUIControllerSetup;
 import de.mossgrabers.controller.mackie.hui.controller.HUIControlSurface;
+import de.mossgrabers.controller.mackie.hui.mode.HUIMode;
 import de.mossgrabers.framework.controller.ButtonID;
 import de.mossgrabers.framework.controller.display.ITextDisplay;
 import de.mossgrabers.framework.daw.IModel;
@@ -15,15 +18,13 @@ import de.mossgrabers.framework.mode.track.DefaultTrackMode;
 import de.mossgrabers.framework.utils.ButtonEvent;
 import de.mossgrabers.framework.utils.StringUtils;
 
-import java.util.Optional;
-
 
 /**
  * Abstract base mode for all track modes.
  *
  * @author Jürgen Moßgraber
  */
-public abstract class AbstractTrackMode extends DefaultTrackMode<HUIControlSurface, HUIConfiguration>
+public abstract class AbstractTrackMode extends DefaultTrackMode<HUIControlSurface, HUIConfiguration> implements HUIMode
 {
     /**
      * Constructor.
@@ -95,13 +96,4 @@ public abstract class AbstractTrackMode extends DefaultTrackMode<HUIControlSurfa
         final int extenderOffset = this.surface.getExtenderOffset ();
         return super.getTrack (extenderOffset + index);
     }
-
-
-    /**
-     * Update the knob LEDs.
-     */
-    public abstract void updateKnobLEDs ();
-
-
-    protected abstract void resetParameter (int index);
 }

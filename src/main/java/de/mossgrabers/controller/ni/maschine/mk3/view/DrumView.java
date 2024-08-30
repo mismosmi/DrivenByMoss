@@ -1,5 +1,5 @@
 // Written by Jürgen Moßgraber - mossgrabers.de
-// (c) 2017-2023
+// (c) 2017-2024
 // Licensed under LGPLv3 - http://www.gnu.org/licenses/lgpl-3.0.txt
 
 package de.mossgrabers.controller.ni.maschine.mk3.view;
@@ -257,6 +257,7 @@ public class DrumView extends AbstractDrumView<MaschineControlSurface, MaschineC
         final boolean isSelectPressed = this.surface.isSelectPressed ();
         if (isSelectPressed)
         {
+            this.surface.setTriggerConsumed (ButtonID.SELECT);
             if (velocity > 0)
                 this.handleSequencerAreaRepeatOperator (clip, notePosition, velocity, isSelectPressed);
             return true;

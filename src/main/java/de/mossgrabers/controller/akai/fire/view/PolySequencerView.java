@@ -1,5 +1,5 @@
 // Written by Jürgen Moßgraber - mossgrabers.de
-// (c) 2017-2023
+// (c) 2017-2024
 // Licensed under LGPLv3 - http://www.gnu.org/licenses/lgpl-3.0.txt
 
 package de.mossgrabers.controller.akai.fire.view;
@@ -12,7 +12,9 @@ import de.mossgrabers.framework.daw.clip.INoteClip;
 import de.mossgrabers.framework.daw.clip.NotePosition;
 import de.mossgrabers.framework.daw.clip.StepState;
 import de.mossgrabers.framework.daw.data.ITrack;
-import de.mossgrabers.framework.mode.Modes;
+import de.mossgrabers.framework.featuregroup.IMode;
+import de.mossgrabers.framework.featuregroup.ModeManager;
+import de.mossgrabers.framework.mode.INoteEditorMode;
 import de.mossgrabers.framework.utils.ButtonEvent;
 import de.mossgrabers.framework.view.sequencer.AbstractPolySequencerView;
 
@@ -150,7 +152,9 @@ public class PolySequencerView extends AbstractPolySequencerView<FireControlSurf
     @Override
     protected boolean handleSequencerAreaButtonCombinations (final INoteClip clip, final int channel, final int step)
     {
-        if (this.surface.getModeManager ().isActive (Modes.NOTE))
+        final ModeManager modeManager = this.surface.getModeManager ();
+        final IMode activeMode = modeManager.getActive ();
+        if (activeMode instanceof final INoteEditorMode noteMode)
         {
             final NotePosition notePosition = new NotePosition (channel, step, 0);
             for (int row = 0; row < 128; row++)
@@ -159,6 +163,8 @@ public class PolySequencerView extends AbstractPolySequencerView<FireControlSurf
                 if (clip.getStep (notePosition).getState () == StepState.START)
                     this.editNote (clip, notePosition, true);
             }
+            if (noteMode.getNoteEditor ().getNotes ().isEmpty ())
+                this.surface.getDisplay ().notify ("Edit Notes: Off");
             return true;
         }
 

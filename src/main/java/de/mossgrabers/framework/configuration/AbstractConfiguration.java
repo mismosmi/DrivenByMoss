@@ -1,5 +1,5 @@
 // Written by Jürgen Moßgraber - mossgrabers.de
-// (c) 2017-2023
+// (c) 2017-2024
 // Licensed under LGPLv3 - http://www.gnu.org/licenses/lgpl-3.0.txt
 
 package de.mossgrabers.framework.configuration;
@@ -76,66 +76,68 @@ public abstract class AbstractConfiguration implements Configuration
     public static final Integer      AUTO_SELECT_DRUM                = Integer.valueOf (16);
     /** Setting for turning off empty drum pads (otherwise orange). */
     public static final Integer      TURN_OFF_EMPTY_DRUM_PADS        = Integer.valueOf (17);
+    /** Setting for turning off pads which are in-scale (otherwise white). */
+    public static final Integer      TURN_OFF_SCALE_PADS             = Integer.valueOf (18);
     /** Setting for sounding drum pads with or without Select combination. */
-    public static final Integer      SOUND_DRUM_PADS                 = Integer.valueOf (18);
+    public static final Integer      SOUND_DRUM_PADS                 = Integer.valueOf (19);
     /** Setting for action for record armed pad. */
-    public static final Integer      ACTION_FOR_REC_ARMED_PAD        = Integer.valueOf (19);
+    public static final Integer      ACTION_FOR_REC_ARMED_PAD        = Integer.valueOf (20);
     /** Setting for displaying browser column 1. */
-    public static final Integer      BROWSER_DISPLAY_FILTER1         = Integer.valueOf (20);
+    public static final Integer      BROWSER_DISPLAY_FILTER1         = Integer.valueOf (21);
     /** Setting for displaying browser column 2. */
-    public static final Integer      BROWSER_DISPLAY_FILTER2         = Integer.valueOf (21);
+    public static final Integer      BROWSER_DISPLAY_FILTER2         = Integer.valueOf (22);
     /** Setting for displaying browser column 3. */
-    public static final Integer      BROWSER_DISPLAY_FILTER3         = Integer.valueOf (22);
+    public static final Integer      BROWSER_DISPLAY_FILTER3         = Integer.valueOf (23);
     /** Setting for displaying browser column 4. */
-    public static final Integer      BROWSER_DISPLAY_FILTER4         = Integer.valueOf (23);
+    public static final Integer      BROWSER_DISPLAY_FILTER4         = Integer.valueOf (24);
     /** Setting for displaying browser column 5. */
-    public static final Integer      BROWSER_DISPLAY_FILTER5         = Integer.valueOf (24);
+    public static final Integer      BROWSER_DISPLAY_FILTER5         = Integer.valueOf (25);
     /** Setting for displaying browser column 6. */
-    public static final Integer      BROWSER_DISPLAY_FILTER6         = Integer.valueOf (25);
+    public static final Integer      BROWSER_DISPLAY_FILTER6         = Integer.valueOf (26);
     /** Setting for displaying browser column 7. */
-    public static final Integer      BROWSER_DISPLAY_FILTER7         = Integer.valueOf (26);
+    public static final Integer      BROWSER_DISPLAY_FILTER7         = Integer.valueOf (27);
     /** Setting for displaying browser column 8. */
-    public static final Integer      BROWSER_DISPLAY_FILTER8         = Integer.valueOf (27);
+    public static final Integer      BROWSER_DISPLAY_FILTER8         = Integer.valueOf (28);
     /** The speed of a knob. */
-    public static final Integer      KNOB_SENSITIVITY_DEFAULT        = Integer.valueOf (28);
+    public static final Integer      KNOB_SENSITIVITY_DEFAULT        = Integer.valueOf (29);
     /** The speed of a knob in slow mode. */
-    public static final Integer      KNOB_SENSITIVITY_SLOW           = Integer.valueOf (29);
+    public static final Integer      KNOB_SENSITIVITY_SLOW           = Integer.valueOf (30);
     /** Turn note repeat on/off. */
-    public static final Integer      NOTEREPEAT_ACTIVE               = Integer.valueOf (30);
+    public static final Integer      NOTEREPEAT_ACTIVE               = Integer.valueOf (31);
     /** The note repeat period. */
-    public static final Integer      NOTEREPEAT_PERIOD               = Integer.valueOf (31);
+    public static final Integer      NOTEREPEAT_PERIOD               = Integer.valueOf (32);
     /** The note repeat length. */
-    public static final Integer      NOTEREPEAT_LENGTH               = Integer.valueOf (32);
+    public static final Integer      NOTEREPEAT_LENGTH               = Integer.valueOf (33);
     /** The note repeat mode. */
-    public static final Integer      NOTEREPEAT_MODE                 = Integer.valueOf (33);
+    public static final Integer      NOTEREPEAT_MODE                 = Integer.valueOf (34);
     /** The note repeat octave. */
-    public static final Integer      NOTEREPEAT_OCTAVE               = Integer.valueOf (34);
+    public static final Integer      NOTEREPEAT_OCTAVE               = Integer.valueOf (35);
     /** The MIDI channel to use for editing sequencer notes. */
-    public static final Integer      MIDI_EDIT_CHANNEL               = Integer.valueOf (35);
+    public static final Integer      MIDI_EDIT_CHANNEL               = Integer.valueOf (36);
     /** Setting for excluding deactivated tracks. */
-    public static final Integer      EXCLUDE_DEACTIVATED_ITEMS       = Integer.valueOf (36);
+    public static final Integer      EXCLUDE_DEACTIVATED_ITEMS       = Integer.valueOf (37);
     /** Setting for different record button functions. */
-    public static final Integer      RECORD_BUTTON_FUNCTION          = Integer.valueOf (37);
+    public static final Integer      RECORD_BUTTON_FUNCTION          = Integer.valueOf (38);
     /** Setting for different record button functions in combination with shift. */
-    public static final Integer      SHIFTED_RECORD_BUTTON_FUNCTION  = Integer.valueOf (38);
+    public static final Integer      SHIFTED_RECORD_BUTTON_FUNCTION  = Integer.valueOf (39);
     /** Show tracks hierarchical (instead of flat) if enabled. */
-    public static final Integer      HIERARCHICAL_TRACKS             = Integer.valueOf (39);
-    /** Setting for the footswitch functionality. */
-    public static final Integer      FOOTSWITCH_1                    = Integer.valueOf (40);
-    /** Setting for the footswitch functionality. */
-    public static final Integer      FOOTSWITCH_2                    = Integer.valueOf (41);
-    /** Setting for the footswitch functionality. */
-    public static final Integer      FOOTSWITCH_3                    = Integer.valueOf (42);
-    /** Setting for the footswitch functionality. */
-    public static final Integer      FOOTSWITCH_4                    = Integer.valueOf (43);
+    public static final Integer      HIERARCHICAL_TRACKS             = Integer.valueOf (40);
+    /** Setting for the foot-switch functionality. */
+    public static final Integer      FOOTSWITCH_1                    = Integer.valueOf (41);
+    /** Setting for the foot-switch functionality. */
+    public static final Integer      FOOTSWITCH_2                    = Integer.valueOf (42);
+    /** Setting for the foot-switch functionality. */
+    public static final Integer      FOOTSWITCH_3                    = Integer.valueOf (43);
+    /** Setting for the foot-switch functionality. */
+    public static final Integer      FOOTSWITCH_4                    = Integer.valueOf (44);
     /** Preferred note view. */
-    public static final Integer      PREFERRED_NOTE_VIEW             = Integer.valueOf (44);
+    public static final Integer      STARTUP_VIEW                    = Integer.valueOf (45);
     /** Start with session view if active. */
-    public static final Integer      START_WITH_SESSION_VIEW         = Integer.valueOf (45);
+    public static final Integer      START_WITH_SESSION_VIEW         = Integer.valueOf (46);
     /** The MPE on/off setting has changed. */
-    public static final Integer      ENABLED_MPE_ZONES               = Integer.valueOf (46);
+    public static final Integer      ENABLED_MPE_ZONES               = Integer.valueOf (47);
     /** The MPE pitch bend sensitivity setting has changed. */
-    public static final Integer      MPE_PITCHBEND_RANGE             = Integer.valueOf (47);
+    public static final Integer      MPE_PITCHBEND_RANGE             = Integer.valueOf (48);
 
     // Implementation IDs start at 50
 
@@ -374,6 +376,7 @@ public abstract class AbstractConfiguration implements Configuration
     private IEnumSetting                              midiEditChannelSetting;
     private IIntegerSetting                           pitchBendRangeSetting;
     private IEnumSetting                              enableMPESetting;
+    private IEnumSetting                              showPlayedChordsSetting;
 
     private final List<IEnumSetting>                  instrumentSettings                  = new ArrayList<> (7);
     private final List<IEnumSetting>                  audioSettings                       = new ArrayList<> (3);
@@ -404,15 +407,16 @@ public abstract class AbstractConfiguration implements Configuration
     protected boolean                                 drawRecordStripe                    = true;
     protected int                                     convertAftertouch                   = 0;
     /** Accent button active. */
-    private boolean                                   accentActive                        = false;
+    protected boolean                                 accentActive                        = false;
     /** Fixed velocity value for accent. */
-    private int                                       fixedAccentValue                    = 127;
+    protected int                                     fixedAccentValue                    = 127;
     private int                                       quantizeAmount                      = 100;
     protected boolean                                 flipRecord                          = false;
     private int                                       newClipLength                       = 2;
     private boolean                                   autoSelectDrum                      = false;
-    private boolean                                   turnOffEmptyDrumPads                = false;
     private int                                       actionForRecArmedPad                = 0;
+    private boolean                                   turnOffEmptyDrumPads                = false;
+    private boolean                                   turnOffScalePads;
     private final int []                              footswitch                          = new int [NUMBER_OF_FOOTSWITCHES];
     private int                                       knobSpeedDefault                    = 0;
     private int                                       knobSpeedSlow                       = -40;
@@ -434,13 +438,14 @@ public abstract class AbstractConfiguration implements Configuration
 
     private RecordFunction                            recordButtonFunction                = RecordFunction.RECORD_ARRANGER;
     private RecordFunction                            shiftedRecordButtonFunction         = RecordFunction.NEW_CLIP;
-    private Views                                     preferredNoteView                   = Views.PLAY;
+    private Views                                     startupView                         = Views.PLAY;
     protected Views                                   preferredAudioView                  = Views.PLAY;
     private boolean                                   startWithSessionView                = false;
     private boolean                                   useCombinationButtonToSoundDrumPads = false;
 
     private boolean                                   isMPEEnabled                        = false;
     private int                                       mpePitchBendRange                   = 48;
+    private boolean                                   showPlayedChords                    = true;
 
 
     /**
@@ -762,6 +767,14 @@ public abstract class AbstractConfiguration implements Configuration
     public boolean isTurnOffEmptyDrumPads ()
     {
         return this.turnOffEmptyDrumPads;
+    }
+
+
+    /** {@inheritDoc} */
+    @Override
+    public boolean isTurnOffScalePads ()
+    {
+        return this.turnOffScalePads;
     }
 
 
@@ -1238,10 +1251,11 @@ public abstract class AbstractConfiguration implements Configuration
      *
      * @param settingsUI The settings
      * @param category The category to add the setting to or null to use default
+     * @param flatIsDefault The default is set to flat if true
      */
-    protected void activateTrackNavigationSetting (final ISettingsUI settingsUI, final String category)
+    protected void activateTrackNavigationSetting (final ISettingsUI settingsUI, final String category, final boolean flatIsDefault)
     {
-        final IEnumSetting trackNavigationSetting = settingsUI.getEnumSetting ("Track Navigation (requires restart)", category == null ? CATEGORY_WORKFLOW : category, TRACK_NAVIGATION_OPTIONS, TRACK_NAVIGATION_OPTIONS[0]);
+        final IEnumSetting trackNavigationSetting = settingsUI.getEnumSetting ("Track Navigation (requires restart)", category == null ? CATEGORY_WORKFLOW : category, TRACK_NAVIGATION_OPTIONS, TRACK_NAVIGATION_OPTIONS[flatIsDefault ? 0 : 1]);
         this.isTrackNavigationFlat = TRACK_NAVIGATION_OPTIONS[0].equals (trackNavigationSetting.get ());
     }
 
@@ -1332,6 +1346,23 @@ public abstract class AbstractConfiguration implements Configuration
         });
 
         this.isSettingActive.add (TURN_OFF_EMPTY_DRUM_PADS);
+    }
+
+
+    /**
+     * Activate the turn scale pads setting.
+     *
+     * @param settingsUI The settings
+     */
+    protected void activateTurnOffScalePadsSetting (final ISettingsUI settingsUI)
+    {
+        final IEnumSetting turnOffScalePadsSetting = settingsUI.getEnumSetting ("Turn off scale pads", CATEGORY_PLAY_AND_SEQUENCE, ON_OFF_OPTIONS, ON_OFF_OPTIONS[0]);
+        turnOffScalePadsSetting.addValueObserver (value -> {
+            this.turnOffScalePads = "On".equals (value);
+            this.notifyObservers (TURN_OFF_SCALE_PADS);
+        });
+
+        this.isSettingActive.add (TURN_OFF_SCALE_PADS);
     }
 
 
@@ -1574,24 +1605,24 @@ public abstract class AbstractConfiguration implements Configuration
 
 
     /**
-     * Activate the preferred note view setting.
+     * Activate the preferred startup view setting.
      *
      * @param settingsUI The settings
      * @param views The available views for selection
      */
-    protected void activatePreferredNoteViewSetting (final ISettingsUI settingsUI, final Views [] views)
+    protected void activateStartupViewSetting (final ISettingsUI settingsUI, final Views [] views)
     {
         final String [] labels = new String [views.length];
         for (int i = 0; i < views.length; i++)
             labels[i] = Views.getViewName (views[i]);
 
-        final IEnumSetting preferredNoteViewSetting = settingsUI.getEnumSetting ("Default note view", CATEGORY_PLAY_AND_SEQUENCE, labels, labels[0]);
-        preferredNoteViewSetting.addValueObserver (value -> {
-            this.preferredNoteView = Views.getViewByName (value);
-            this.notifyObservers (PREFERRED_NOTE_VIEW);
+        final IEnumSetting startupViewSetting = settingsUI.getEnumSetting ("Startup view", CATEGORY_PLAY_AND_SEQUENCE, labels, labels[0]);
+        startupViewSetting.addValueObserver (value -> {
+            this.startupView = Views.getViewByName (value);
+            this.notifyObservers (STARTUP_VIEW);
         });
 
-        this.isSettingActive.add (PREFERRED_NOTE_VIEW);
+        this.isSettingActive.add (STARTUP_VIEW);
     }
 
 
@@ -1637,6 +1668,18 @@ public abstract class AbstractConfiguration implements Configuration
             this.mpePitchBendRange = value.intValue ();
             this.notifyObservers (MPE_PITCHBEND_RANGE);
         });
+    }
+
+
+    /**
+     * Activate the setting to display played chords.
+     *
+     * @param settingsUI The settings
+     */
+    protected void activateShowPlayedChordsSetting (final ISettingsUI settingsUI)
+    {
+        this.showPlayedChordsSetting = settingsUI.getEnumSetting ("Notify played chords", CATEGORY_PLAY_AND_SEQUENCE, ON_OFF_OPTIONS, ON_OFF_OPTIONS[1]);
+        this.showPlayedChordsSetting.addValueObserver (value -> this.showPlayedChords = ON_OFF_OPTIONS[1].equals (value));
     }
 
 
@@ -1790,9 +1833,9 @@ public abstract class AbstractConfiguration implements Configuration
 
     /** {@inheritDoc} */
     @Override
-    public Views getPreferredNoteView ()
+    public Views getStartupView ()
     {
-        return this.preferredNoteView;
+        return this.startupView;
     }
 
 
@@ -1897,6 +1940,14 @@ public abstract class AbstractConfiguration implements Configuration
     public boolean isMPEEnabled ()
     {
         return this.isMPEEnabled;
+    }
+
+
+    /** {@inheritDoc} */
+    @Override
+    public boolean isShowPlayedChords ()
+    {
+        return this.showPlayedChords;
     }
 
 

@@ -1,5 +1,5 @@
 // Written by Jürgen Moßgraber - mossgrabers.de
-// (c) 2017-2023
+// (c) 2017-2024
 // Licensed under LGPLv3 - http://www.gnu.org/licenses/lgpl-3.0.txt
 
 package de.mossgrabers.controller.utilities.autocolor;
@@ -45,7 +45,7 @@ public class AutoColorSetup extends AbstractControllerSetup<IControlSurface<Auto
         this.colorManager = new ColorManager ();
         this.valueChanger = new TwosComplementValueChanger (128, 1);
         this.configuration = new AutoColorConfiguration (host, this.valueChanger);
-        this.autoColor = new AutoColor (this.configuration);
+        this.autoColor = new AutoColor (this.configuration, host);
     }
 
 

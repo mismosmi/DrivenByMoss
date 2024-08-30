@@ -1,5 +1,5 @@
 // Written by Jürgen Moßgraber - mossgrabers.de
-// (c) 2017-2023
+// (c) 2017-2024
 // Licensed under LGPLv3 - http://www.gnu.org/licenses/lgpl-3.0.txt
 
 package de.mossgrabers.controller.ni.maschine.mk3.command.trigger;
@@ -12,7 +12,7 @@ import de.mossgrabers.framework.daw.IModel;
 import de.mossgrabers.framework.daw.data.ITrack;
 import de.mossgrabers.framework.featuregroup.ModeManager;
 import de.mossgrabers.framework.featuregroup.ViewManager;
-import de.mossgrabers.framework.mode.INoteMode;
+import de.mossgrabers.framework.mode.INoteEditorMode;
 import de.mossgrabers.framework.mode.Modes;
 import de.mossgrabers.framework.utils.ButtonEvent;
 import de.mossgrabers.framework.view.Views;
@@ -66,7 +66,7 @@ public class PadModeCommand extends AbstractTriggerCommand<MaschineControlSurfac
         else
         {
             viewManager.setActive (Views.DRUM);
-            ((INoteMode) this.surface.getModeManager ().get (Modes.NOTE)).clearNotes ();
+            ((INoteEditorMode) this.surface.getModeManager ().get (Modes.NOTE)).getNoteEditor ().clearNotes ();
 
             // Store the newly selected view for the current track
             final ITrack cursorTrack = this.model.getCursorTrack ();

@@ -1,5 +1,5 @@
 // Written by Jürgen Moßgraber - mossgrabers.de
-// (c) 2017-2023
+// (c) 2017-2024
 // Licensed under LGPLv3 - http://www.gnu.org/licenses/lgpl-3.0.txt
 
 package de.mossgrabers.framework.featuregroup;
@@ -16,6 +16,7 @@ import de.mossgrabers.framework.daw.data.IScene;
 import de.mossgrabers.framework.daw.data.ITrack;
 import de.mossgrabers.framework.scale.Scales;
 import de.mossgrabers.framework.utils.ButtonEvent;
+import de.mossgrabers.framework.utils.ChordIdentifier;
 import de.mossgrabers.framework.utils.KeyManager;
 
 
@@ -33,6 +34,7 @@ public abstract class AbstractView<S extends IControlSurface<C>, C extends Confi
 
     protected final Scales        scales;
     protected final KeyManager    keyManager;
+    private String                previousChord;
 
     private AftertouchCommand     aftertouchCommand;
 
@@ -84,6 +86,31 @@ public abstract class AbstractView<S extends IControlSurface<C>, C extends Confi
         final IMode m = this.surface.getModeManager ().getActive ();
         if (m != null)
             m.updateDisplay ();
+        final IView v = this.surface.getViewManager ().getActive ();
+        if (v != null)
+            this.displayChord ();
+    }
+
+
+    protected void displayChord ()
+    {
+        if (!this.surface.getConfiguration ().isShowPlayedChords ())
+            return;
+
+        final String chord = this.getChordName ();
+        if (chord != null && !this.previousChord.equals (chord))
+        {
+            this.surface.getDisplay ().notify (chord);
+            this.previousChord = chord;
+            return;
+        }
+        this.previousChord = "";
+    }
+
+
+    protected String getChordName ()
+    {
+        return ChordIdentifier.identifyChord (this.keyManager.getMidiNotesFromPressedKeys ());
     }
 
 

@@ -1,8 +1,12 @@
 // Written by Jürgen Moßgraber - mossgrabers.de
-// (c) 2017-2023
+// (c) 2017-2024
 // Licensed under LGPLv3 - http://www.gnu.org/licenses/lgpl-3.0.txt
 
 package de.mossgrabers.framework.view.sequencer;
+
+import java.util.List;
+import java.util.Optional;
+import java.util.function.IntUnaryOperator;
 
 import de.mossgrabers.controller.ni.maschine.core.MaschineColorManager;
 import de.mossgrabers.framework.configuration.Configuration;
@@ -27,10 +31,6 @@ import de.mossgrabers.framework.daw.data.bank.IDrumPadBank;
 import de.mossgrabers.framework.daw.data.bank.ITrackBank;
 import de.mossgrabers.framework.utils.ButtonEvent;
 import de.mossgrabers.framework.view.TransposeView;
-
-import java.util.List;
-import java.util.Optional;
-import java.util.function.IntUnaryOperator;
 
 
 /**
@@ -610,9 +610,8 @@ public abstract class AbstractDrumView<S extends IControlSurface<C>, C extends C
     }
 
 
-    /**
-     * Reset the drum octave to 0.
-     */
+    /** {@inheritDoc} */
+    @Override
     public void resetOctave ()
     {
         this.keyManager.clearPressedKeys ();
@@ -733,7 +732,7 @@ public abstract class AbstractDrumView<S extends IControlSurface<C>, C extends C
      */
     protected boolean isDeleteTrigger ()
     {
-        return this.surface.isPressed (this.buttonDelete);
+        return this.isButtonCombination (this.buttonDelete);
     }
 
 

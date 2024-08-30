@@ -1,8 +1,11 @@
 // Written by Jürgen Moßgraber - mossgrabers.de
-// (c) 2017-2023
+// (c) 2017-2024
 // Licensed under LGPLv3 - http://www.gnu.org/licenses/lgpl-3.0.txt
 
 package de.mossgrabers.controller.mackie.hui;
+
+import java.util.Arrays;
+import java.util.List;
 
 import de.mossgrabers.framework.configuration.AbstractConfiguration;
 import de.mossgrabers.framework.configuration.IEnumSetting;
@@ -10,9 +13,6 @@ import de.mossgrabers.framework.configuration.ISettingsUI;
 import de.mossgrabers.framework.controller.valuechanger.IValueChanger;
 import de.mossgrabers.framework.daw.IHost;
 import de.mossgrabers.framework.daw.midi.ArpeggiatorMode;
-
-import java.util.Arrays;
-import java.util.List;
 
 
 /**
@@ -46,13 +46,15 @@ public class HUIConfiguration extends AbstractConfiguration
     private static final String    DEVICE_ICON_QCON_PRO_X  = "icon QConPro X";
     private static final String    DEVICE_MACKIE_HUI       = "Mackie HUI";
     private static final String    DEVICE_NOVATION_SLMKIII = "Novation MkIII";
+    private static final String    DEVICE_YAMAHA_DM3       = "Yamaha DM3";
 
     private static final String [] DEVICE_OPTIONS          =
     {
         DEVICE_SELECT,
         DEVICE_ICON_QCON_PRO_X,
         DEVICE_MACKIE_HUI,
-        DEVICE_NOVATION_SLMKIII
+        DEVICE_NOVATION_SLMKIII,
+        DEVICE_YAMAHA_DM3
     };
 
     private static final String [] ASSIGNABLE_BUTTON_NAMES =
@@ -138,6 +140,7 @@ public class HUIConfiguration extends AbstractConfiguration
             {
                 case DEVICE_MACKIE_HUI:
                 case DEVICE_ICON_QCON_PRO_X:
+                case DEVICE_YAMAHA_DM3:
                     this.hasDisplay1Setting.set (ON_OFF_OPTIONS[1]);
                     this.hasSegmentDisplaySetting.set (ON_OFF_OPTIONS[1]);
                     this.hasMotorFadersSetting.set (ON_OFF_OPTIONS[1]);

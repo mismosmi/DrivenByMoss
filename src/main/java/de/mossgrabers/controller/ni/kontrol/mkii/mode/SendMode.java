@@ -1,5 +1,5 @@
 // Written by Jürgen Moßgraber - mossgrabers.de
-// (c) 2017-2023
+// (c) 2017-2024
 // Licensed under LGPLv3 - http://www.gnu.org/licenses/lgpl-3.0.txt
 
 package de.mossgrabers.controller.ni.kontrol.mkii.mode;
@@ -42,7 +42,6 @@ public class SendMode extends DefaultTrackMode<KontrolProtocolControlSurface, Ko
         super ("Send", surface, model, false);
 
         this.setControls (controls);
-        // TODO das ist doch Quatsch, oder?
         final SendParameterProvider pp = new SendParameterProvider (model, -1, 0);
         this.setParameterProvider (new CombinedParameterProvider (pp, pp));
 
@@ -129,6 +128,13 @@ public class SendMode extends DefaultTrackMode<KontrolProtocolControlSurface, Ko
             final int j = 2 * i;
             vuData[j] = valueChanger.toMidiValue (send.getModulatedValue ());
             vuData[j + 1] = valueChanger.toMidiValue (send.getModulatedValue ());
+
+            // Switch off all mutes and solos otherwise "tracks" will be darkened
+            this.surface.sendKontrolTrackSysEx (KontrolProtocolControlSurface.KONTROL_TRACK_MUTE, 0, i);
+            this.surface.sendKontrolTrackSysEx (KontrolProtocolControlSurface.KONTROL_TRACK_SOLO, 0, i);
+            this.surface.sendKontrolTrackSysEx (KontrolProtocolControlSurface.KONTROL_TRACK_MUTED_BY_SOLO, 0, i);
+            this.surface.sendCommand (KontrolProtocolControlSurface.KONTROL_SELECTED_TRACK_AVAILABLE, 0);
+            this.surface.sendCommand (KontrolProtocolControlSurface.KONTROL_SELECTED_TRACK_MUTED_BY_SOLO, 0);
         }
         this.surface.sendKontrolTrackSysEx (KontrolProtocolControlSurface.KONTROL_TRACK_VU, 2, 0, vuData);
     }

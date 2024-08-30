@@ -1,10 +1,13 @@
 // Written by Jürgen Moßgraber - mossgrabers.de
-// (c) 2017-2023
+// (c) 2017-2024
 // Licensed under LGPLv3 - http://www.gnu.org/licenses/lgpl-3.0.txt
 
 package de.mossgrabers.controller.mackie.mcu.command.trigger;
 
+import java.util.Optional;
+
 import de.mossgrabers.controller.mackie.mcu.MCUConfiguration;
+import de.mossgrabers.controller.mackie.mcu.MCUConfiguration.MainDisplay;
 import de.mossgrabers.controller.mackie.mcu.controller.MCUControlSurface;
 import de.mossgrabers.controller.mackie.mcu.mode.device.UserMode;
 import de.mossgrabers.framework.command.core.AbstractTriggerCommand;
@@ -22,8 +25,6 @@ import de.mossgrabers.framework.featuregroup.ModeManager;
 import de.mossgrabers.framework.mode.Modes;
 import de.mossgrabers.framework.utils.ButtonEvent;
 import de.mossgrabers.framework.utils.StringUtils;
-
-import java.util.Optional;
 
 
 /**
@@ -82,6 +83,8 @@ public class MCUMoveTrackBankCommand extends AbstractTriggerCommand<MCUControlSu
             return;
         }
 
+        final boolean shouldNotify = this.surface.getConfiguration ().getMainDisplayType () != MainDisplay.ASPARION;
+
         final ModeManager modeManager = this.surface.getModeManager ();
         final Modes activeID = modeManager.getActiveID ();
         switch (activeID)
@@ -97,7 +100,8 @@ public class MCUMoveTrackBankCommand extends AbstractTriggerCommand<MCUControlSu
                     else
                         cursorDevice.selectNext ();
                 }
-                this.notifySelectedDeviceAndParameterPage ();
+                if (shouldNotify)
+                    this.notifySelectedDeviceAndParameterPage ();
                 break;
 
             case USER:
@@ -111,7 +115,8 @@ public class MCUMoveTrackBankCommand extends AbstractTriggerCommand<MCUControlSu
                     for (final FeatureGroupManager<Modes, IMode> mm: modeManager.getConnectedManagers ())
                         ((UserMode) mm.get (Modes.USER)).setMode (this.moveLeft);
                 }
-                this.notifySelectedProjectAndParameterPage ();
+                if (shouldNotify)
+                    this.notifySelectedProjectAndParameterPage ();
                 break;
 
             case MARKERS:
@@ -119,8 +124,7 @@ public class MCUMoveTrackBankCommand extends AbstractTriggerCommand<MCUControlSu
                 break;
 
             case DEVICE_LAYER, DEVICE_LAYER_VOLUME, DEVICE_LAYER_PAN, DEVICE_LAYER_SEND1, DEVICE_LAYER_SEND2, DEVICE_LAYER_SEND3, DEVICE_LAYER_SEND4, DEVICE_LAYER_SEND5, DEVICE_LAYER_SEND6, DEVICE_LAYER_SEND7, DEVICE_LAYER_SEND8:
-                final ICursorDevice cursorDevice = this.model.getCursorDevice ();
-                this.handleBankMovement (cursorDevice.hasDrumPads () ? cursorDevice.getDrumPadBank () : cursorDevice.getLayerBank ());
+                this.handleModeMovement (modeManager.getActive ());
                 break;
 
             default:
@@ -158,6 +162,25 @@ public class MCUMoveTrackBankCommand extends AbstractTriggerCommand<MCUControlSu
                 bank.selectPreviousPage ();
             else
                 bank.selectNextPage ();
+        }
+    }
+
+
+    private void handleModeMovement (final IMode mode)
+    {
+        if (this.moveBy1)
+        {
+            if (this.moveLeft)
+                mode.selectPreviousItem ();
+            else
+                mode.selectNextItem ();
+        }
+        else
+        {
+            if (this.moveLeft)
+                mode.selectPreviousItemPage ();
+            else
+                mode.selectNextItemPage ();
         }
     }
 
